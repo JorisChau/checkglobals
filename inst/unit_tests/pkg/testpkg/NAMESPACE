@@ -1,0 +1,6 @@
+import(stats)
+import(utils)
+importFrom(methods, setGeneric, setMethod, getMethod)
+importFrom(parallel, pvec)
+importFrom(pkgA, fun)
+importMethodsFrom(pkgA, "plot")

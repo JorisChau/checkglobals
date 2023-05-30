@@ -1,0 +1,16 @@
+Package: checkglobals
+Type: Package
+Title: Detect dependencies in R-source code
+Version: 0.1.0
+Date: 2023-06-01
+Authors@R: person("Joris", "Chau", email = "joris.chau@openanalytics.eu", role = c("aut", "cre"))
+Description: A minimal zero-dependency R-package for (approximate) static code analysis of R-source code to detect global variables, external function calls and R-package dependencies.
+BugReports: https://github.com/JorisChau/checkglobals/issues
+URL: https://github.com/JorisChau/checkglobals
+Depends: 
+  R (>= 4.1.0)
+Suggests:
+  cli
+Encoding: UTF-8
+License: MIT + file LICENSE
+RoxygenNote: 7.2.0
