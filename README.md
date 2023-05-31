@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# {checkglobals}: On-the-fly analysis of R-code dependencies
+# {checkglobals}: On-the-fly detection of R-code dependencies
 
 <!-- badges: start -->
 
@@ -12,8 +12,8 @@ version](http://www.r-pkg.org/badges/version/checkglobals)](https://cran.r-proje
 [![status](https://tinyverse.netlify.com/badge/checkglobals)](https://CRAN.R-project.org/package=checkglobals)
 <!-- badges: end -->
 
-The minimal {checkglobals}-package allows to naively detect global and
-imported functions or variables from R-source code or R-packages by
+The minimal {checkglobals}-package allows to approximately detect global
+and imported functions or variables from R-source code or R-packages by
 inspecting the internal syntax trees of the code, (i.e. *static code
 analysis*). The aim of this package is to serve as a fast and
 light-weight alternative to `codetools::findGlobals()` to check
@@ -27,9 +27,6 @@ suggested for interactive use).
 ## Installation
 
 ``` r
-# Install latest release from CRAN:
-install.packages("checkglobals")
-
 # Install the development version from GitHub:
 # install.packages("devtools")
 devtools::install_github("JorisChau/checkglobals")
