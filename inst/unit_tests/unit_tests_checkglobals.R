@@ -59,9 +59,7 @@ dotest("2.2", check2.2, c("PKG_SYMBOL: utils, globalVariables", "ERROR: failed t
                           "PKG_SYMBOL: utils, globalVariables", "DATASET: dataset"))
 
 ## check string
-rfile <- system.file("unit_tests", "pkg", "testpkg", "R", "functions2.R", package = "checkglobals")
-rtext <- readChar(con = rfile, nchars = file.info(rfile)$size)
-check3 <- checkglobals(text = rtext)
+check3 <- checkglobals(text = "g1 <- function(x, y) f1()")
 
 ## check directory
 rdir <- system.file("unit_tests", "pkg", "testpkg", "R", package = "checkglobals")
