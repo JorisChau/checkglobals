@@ -61,7 +61,6 @@ static int testbit(R_len_t *array, R_len_t el)
 static SEXP matcharg_rho(SEXP op, SEXP call, SEXP actuals, SEXP rho, int argpos)
 {
     int nprotect = 1;
-    SEXP arg = NULL;
     SEXP fun = PROTECT(Rf_findFun(op, rho));
 
     if (fun != R_UnboundValue && !Rf_isPrimitive(fun))
@@ -151,11 +150,9 @@ static SEXP matcharg_rho(SEXP op, SEXP call, SEXP actuals, SEXP rho, int argpos)
 }
 
 /* partially match argument position based on formals table */
-static SEXP matcharg_formals(SEXP op, SEXP call, SEXP actuals, const char **formals, int argpos)
+static SEXP matcharg_formals(SEXP call, SEXP actuals, const char **formals, int argpos)
 {
     int nprotect = 0, narg = 0, dots = -1;
-    SEXP arg = NULL;
-
     while (formals[narg] != NULL)
     {
         if (!strcmp(formals[narg], "..."))
@@ -167,7 +164,7 @@ static SEXP matcharg_formals(SEXP op, SEXP call, SEXP actuals, const char **form
         setbit(matched, dots);
 
     // first pass (partially) match named arguments
-    int i = 0, match = 0;
+    int match = 0;
     const char *tag = "";
     SEXP callptr = call;
     SEXP actualj = NULL;
@@ -486,7 +483,7 @@ SEXP matcharg_bynamepos(SEXP op, SEXP call, SEXP rho, const char **formals, cons
             if (!Rf_isNull(rho))
                 arg = PROTECT(matcharg_rho(op, call, actuals, rho, argpos));
             else
-                arg = PROTECT(matcharg_formals(op, call, actuals, formals, argpos));
+                arg = PROTECT(matcharg_formals(call, actuals, formals, argpos));
             UNPROTECT(nprotect + 1);
             return arg;
         }

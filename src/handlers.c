@@ -346,8 +346,16 @@ void import_fun(SEXP op, SEXP call, SEXP rho, SEXP envi, SEXP enclos, SEXP srcre
         if (srcfun != R_UnboundValue)
         {
             srcfun1 = PROTECT(Rf_allocVector(VECSXP, Rf_length(srcfun) + 1));
-            for (int j = 0; j < Rf_length(srcfun); j++)
-                SET_VECTOR_ELT(srcfun1, j, VECTOR_ELT(srcfun, j));
+            PROTECT_INDEX ipx1 = 0;
+            SEXP srcfunj = NULL;
+            PROTECT_WITH_INDEX(srcfunj = VECTOR_ELT(srcfun, 0), &ipx1);
+            SET_VECTOR_ELT(srcfun1, 0, srcfunj);
+            for (int j = 1; j < Rf_length(srcfun); j++)
+            {
+                REPROTECT(srcfunj = VECTOR_ELT(srcfun, j), ipx1);
+                SET_VECTOR_ELT(srcfun1, j, srcfunj);
+            }
+            UNPROTECT(1);
         }
         else
             srcfun1 = PROTECT(Rf_allocVector(VECSXP, 1));

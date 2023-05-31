@@ -79,14 +79,25 @@ static void assign_global(SEXP sym, const char *opchar, SEXP enclos, R_len_t i, 
         if (srcsym != R_UnboundValue)
         {
             srcsym1 = PROTECT(Rf_allocVector(VECSXP, Rf_length(srcsym) + 1));
-            for (int j = 0; j < Rf_length(srcsym); j++)
-                SET_VECTOR_ELT(srcsym1, j, VECTOR_ELT(srcsym, j));
+            PROTECT_INDEX ipx = 0;
+            SEXP srcsymj = NULL;
+            PROTECT_WITH_INDEX(srcsymj = VECTOR_ELT(srcsym, 0), &ipx);
+            SET_VECTOR_ELT(srcsym1, 0, srcsymj);
+            for (int j = 1; j < Rf_length(srcsym); j++)
+            {
+                REPROTECT(srcsymj = VECTOR_ELT(srcsym, j), ipx);
+                SET_VECTOR_ELT(srcsym1, j, srcsymj);
+            }
+            UNPROTECT(1);
         }
         else
             srcsym1 = PROTECT(Rf_allocVector(VECSXP, 1));
         SEXP nmsrc = PROTECT(Rf_findVar(Rf_install(".__srcref__"), enclos));
         if (nmsrc != R_UnboundValue && TYPEOF(nmsrc) == VECSXP && Rf_length(nmsrc) == n)
-            SET_VECTOR_ELT(srcsym1, Rf_length(srcsym1) - 1, VECTOR_ELT(nmsrc, i));
+        {
+            SET_VECTOR_ELT(srcsym1, Rf_length(srcsym1) - 1, PROTECT(VECTOR_ELT(nmsrc, i)));
+            UNPROTECT(1);
+        }
         else if (nmsrc != R_UnboundValue)
             SET_VECTOR_ELT(srcsym1, Rf_length(srcsym1) - 1, nmsrc);
         Rf_defineVar(sym, srcsym1, srcrefg);
@@ -114,7 +125,7 @@ static void walk(SEXP call, SEXP enclos, SEXP env0, SEXP envi, SEXP envg, SEXP r
         {
             if (type == VECSXP || type == EXPRSXP)
             {
-                calli = VECTOR_ELT(call, i);
+                calli = PROTECT(VECTOR_ELT(call, i));
                 if (TYPEOF(calli) == STRSXP && args->include_datasets)
                 {
                     Rf_defineVar(Rf_installChar(STRING_ELT(calli, 0)), R_NilValue, env0);
@@ -127,6 +138,7 @@ static void walk(SEXP call, SEXP enclos, SEXP env0, SEXP envi, SEXP envg, SEXP r
                     walk(calli, enclosi, env0, envi, envg, rho, srcrefi, srcrefg, args);
                     UNPROTECT(1);
                 }
+                UNPROTECT(1);
             }
             else
             {
@@ -174,7 +186,7 @@ static void walk(SEXP call, SEXP enclos, SEXP env0, SEXP envi, SEXP envg, SEXP r
         if (!(args->compiled) && strmatch(opchar, compiled_nms, 7) > -1)
             compiled_call(op, call, rho, env0, args->verbose);
         // 11) extra reserved names R6Class
-        if(strcmp(opchar, "R6Class") == 0) 
+        if (strcmp(opchar, "R6Class") == 0)
             add_reserved_R6(enclos);
         // unprotect operator
         UNPROTECT(1);
