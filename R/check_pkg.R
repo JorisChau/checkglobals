@@ -37,14 +37,12 @@
 #' )
 #'
 #' ## from bundled R-package
-#' if(nzchar(Sys.getenv("TAR"))) {
-#'   check_pkg(
-#'     pkg = system.file(
-#'       "unit_tests", "pkg", "testpkg_1.0.tar.gz",
-#'       package = "checkglobals"
-#'     )
+#' check_pkg(
+#'   pkg = system.file(
+#'     "unit_tests", "pkg", "testpkg_1.0.tar.gz",
+#'     package = "checkglobals"
 #'   )
-#' }
+#' )
 #'
 #' ## from remote bundled R-package
 #' \dontrun{
@@ -70,7 +68,9 @@ check_pkg <- function(pkg = ".", include_compiled = FALSE, skip_globals = NULL) 
     }
     if(isTRUE(dir.create(pkgdir))) {
       utils::untar(pkg, exdir = pkgdir)
+      cat(unlist(file.info(pkgdir)), sep = "\n")
       pkg <- list.dirs(pkgdir, full.names = TRUE, recursive = FALSE)[1]
+      cat(list.files(pkg), sep = "\n")
     } else {
       stop(sprintf("failed to create temporary folder to unpack '%s'", basename(pkg)))
     }

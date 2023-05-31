@@ -73,14 +73,12 @@ checkglobals(
 )
 
 ## R-package from tar.gz
-if(nzchar(Sys.getenv("TAR"))) {
-  checkglobals(
-    pkg = system.file(
-      "unit_tests", "pkg", "testpkg_1.0.tar.gz",
-      package = "checkglobals"
-    )
+checkglobals(
+  pkg = system.file(
+    "unit_tests", "pkg", "testpkg_1.0.tar.gz",
+    package = "checkglobals"
   )
-}
+)
 
 ## R-script from remote location
 \dontrun{
