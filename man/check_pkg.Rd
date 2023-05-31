@@ -47,14 +47,6 @@ check_pkg(
 )
 
 ## from bundled R-package
-check_pkg(
-  pkg = system.file(
-    "unit_tests", "pkg", "testpkg_1.0.tar.gz",
-    package = "checkglobals"
-  )
-)
-
-## from remote bundled R-package
 \dontrun{
   check_pkg(
     pkg = "https://cran.r-project.org/src/contrib/tinytest_1.4.1.tar.gz",

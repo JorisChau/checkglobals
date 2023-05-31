@@ -59,14 +59,6 @@
 #'   )
 #' )
 #'
-#' ## R-package from tar.gz
-#' checkglobals(
-#'   pkg = system.file(
-#'     "unit_tests", "pkg", "testpkg_1.0.tar.gz",
-#'     package = "checkglobals"
-#'   )
-#' )
-#'
 #' ## R-script from remote location
 #' \dontrun{
 #' checkglobals(
