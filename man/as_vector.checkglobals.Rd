@@ -20,6 +20,8 @@ used to convert wildcard patterns to regular expressions.}
 \itemize{
 \item \code{all.names}, a logical value.  If \code{TRUE}, all object names are returned.
 If \code{FALSE}, names which begin with a \samp{.} are omitted. Defaults to \code{TRUE}.
+\item \code{sorted}, a logical value indicating if the function/variable names should be sorted alphabetically.
+Defaults to \code{TRUE}.
 }}
 }
 \value{

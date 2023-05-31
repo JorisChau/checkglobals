@@ -12,6 +12,8 @@
 #' \itemize{
 #' \item \code{all.names}, a logical value.  If \code{TRUE}, all object names are returned.
 #' If \code{FALSE}, names which begin with a \samp{.} are omitted. Defaults to \code{TRUE}.
+#' \item \code{sorted}, a logical value indicating if the function/variable names should be sorted alphabetically.
+#' Defaults to \code{TRUE}.
 #' }
 #' @return a data.frame with three character columns:
 #' \itemize{
@@ -37,23 +39,24 @@ as.data.frame.checkglobals <- function(x, row.names = NULL, optional = FALSE, pa
   which <- match.arg(which, c("global", "import"), several.ok = TRUE)
   dots <- list(...)
   all.names <- dots$all.names %||% TRUE
+  sorted <- dots$sorted %||% TRUE
   dfr <- data.frame(name = character(0), package = character(0), type = character(0), stringsAsFactors = FALSE)
   if(is.element("global", which)) {
-    globals <- objects(x$globals$env, pattern = pattern, all.names = all.names, sorted = TRUE)
+    globals <- objects(x$globals$env, pattern = pattern, all.names = all.names, sorted = sorted)
     if(length(globals)) {
       dfr <- data.frame(name = globals, package = NA_character_, type = "global", stringsAsFactors = FALSE)
     }
   }
   if(is.element("import", which)) {
     if(!missing(pattern)) {
-      imports <- objects(x$imports$env, pattern = pattern, all.names = all.names, sorted = FALSE)
+      imports <- objects(x$imports$env, pattern = pattern, all.names = all.names, sorted = sorted)
       if(length(imports)) {
         pkgs <- mget(imports, envir = x$imports$env, inherits = FALSE)
       } else {
         pkgs <- list()
       }
     } else {
-      pkgs <- as.list(x$imports$env, all.names = all.names, sorted = FALSE)
+      pkgs <- as.list(x$imports$env, all.names = all.names, sorted = sorted)
     }
     if(length(pkgs)) {
       imports <- data.frame(
@@ -62,7 +65,11 @@ as.data.frame.checkglobals <- function(x, row.names = NULL, optional = FALSE, pa
         type = "import",
         stringsAsFactors = FALSE
       )
-      dfr <- rbind(dfr, imports[order(imports$package, imports$name), ], make.row.names = FALSE)
+      if(sorted) {
+        dfr <- rbind(dfr, imports[order(imports$package, imports$name), ], make.row.names = FALSE)
+      } else {
+        dfr <- rbind(dfr, imports, make.row.names = FALSE)
+      }
     }
   }
   dfr
@@ -285,23 +292,30 @@ as_vector.checkglobals <- function(x, pattern, which = c("global", "import"), ..
   which <- match.arg(which, c("global", "import"), several.ok = TRUE)
   dots <- list(...)
   all.names <- dots$all.names %||% TRUE
+  sorted <- dots$sorted %||% TRUE
   vec <- list()
   if(is.element("global", which)) {
-    vec$global <- objects(x$globals$env, pattern = pattern, all.names = all.names, sorted = TRUE)
+    vec$global <- objects(x$globals$env, pattern = pattern, all.names = all.names, sorted = sorted)
   }
   if(is.element("import", which)) {
     ## as.list.environment has no pattern argument
     if(!missing(pattern)) {
-      vec$import <- objects(x$imports$env, pattern = pattern, all.names = all.names, sorted = TRUE)
+      vec$import <- objects(x$imports$env, pattern = pattern, all.names = all.names, sorted = sorted)
       vec$package <- character(0)
       if(length(vec$import)) {
         pkgs <- unlist(mget(vec$import, envir = x$imports$env, inherits = FALSE), recursive = FALSE)
-        vec$package <- sort(unique(pkgs))
+        vec$package <- unique(pkgs)
+        if(sorted) {
+          vec$package <- sort(vec$package)
+        }
       }
     } else {
-      imports <- as.list(x$imports$env, all.names = all.names, sorted = TRUE)
+      imports <- as.list(x$imports$env, all.names = all.names, sorted = sorted)
       vec$import <- names(imports)
-      vec$package <- sort(unique(unlist(imports, recursive = FALSE)))
+      vec$package <- unique(unlist(imports, recursive = FALSE))
+      if(sorted) {
+        vec$package <- sort(vec$package)
+      }
     }
   }
   vec

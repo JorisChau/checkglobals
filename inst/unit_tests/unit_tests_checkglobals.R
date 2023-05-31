@@ -95,40 +95,39 @@ if(nzchar(Sys.getenv("TAR"))) {
 ## check methods
 check8.1 <- as_vector(check5.1, pattern = "g")
 check8.2 <- as_vector(check5.1$globals)
-check8.3 <- as_vector(check5.1$imports)
+check8.3 <- as_vector(check5.1$imports, sorted = FALSE)  ## sorting depends on locale
 check8.4 <- as.data.frame(check5.1$globals)
-check8.5 <- as.data.frame(check5.1$imports, pattern = ".")
+check8.5 <- as.data.frame(check5.1$imports, pattern = ".", sorted = FALSE)
 check8.6 <- as.matrix(check5.1$globals)
-check8.7 <- as.matrix(check5.1$imports)
+check8.7 <- as.matrix(check5.1$imports, sorted = FALSE)
 check8.8 <- as.character(check5.1$globals)
-check8.9 <- as.character(check5.1$imports)
-check8.10 <- as.data.frame(check5.1$imports)
+check8.9 <- as.character(check5.1$imports, sorted = FALSE)
+check8.10 <- as.data.frame(check5.1$imports, sorted = FALSE)
 check8.11 <- as.data.frame(check5.1$imports, pattern = "zzz")
 
 dotest("8.1", check8.1, list(global = "g", import = c("aggregate", "getMethod", "globalVariables"), package = c("methods", "stats", "utils")))
 dotest("8.2", check8.2, list(global = "g"))
-dotest("8.3", check8.3, list(import = c("R6Class", "aggregate", "approxfun", "coef",
-                                        "getMethod", "globalVariables", "head", "is.unit", "median",
-                                        "pvec", "setGeneric", "setMethod", "tail"),
-                             package = c("R6", "grid", "methods", "parallel", "stats", "stats4", "utils")))
+dotest("8.3", check8.3, list(import = c("coef", "is.unit", "getMethod", "globalVariables",
+                                        "approxfun", "R6Class", "setGeneric", "aggregate", "head", "setMethod",
+                                        "pvec", "median", "tail"),
+                             package = c("stats", "stats4", "grid", "methods", "utils", "R6", "parallel")))
 dotest("8.4", check8.4, structure(list(name = "g", package = NA_character_, type = "global"), class = "data.frame", row.names = c(NA, -1L)))
-dotest("8.5", check8.5, structure(list(name = c("R6Class", "is.unit", "getMethod", "setGeneric",
-                                                "setMethod", "pvec", "aggregate", "approxfun", "coef", "median",
-                                                "coef", "globalVariables", "head", "tail"),
-                                       package = c("R6", "grid", "methods", "methods", "methods", "parallel", "stats",
-                                                   "stats", "stats", "stats", "stats4", "utils", "utils", "utils"),
-                                       type = c("import", "import", "import", "import", "import", "import", "import",
-                                                "import", "import", "import", "import", "import", "import", "import")),
-                                      row.names = c(NA, -14L), class = "data.frame"))
+dotest("8.5", check8.5, structure(list(name = c("coef", "coef", "is.unit", "getMethod",
+                                                "globalVariables", "approxfun", "R6Class", "setGeneric", "aggregate",
+                                                "head", "setMethod", "pvec", "median", "tail"),
+                                       package = c("stats", "stats4", "grid", "methods", "utils", "stats", "R6", "methods",
+                                                  "stats", "utils", "methods", "parallel", "stats", "utils"),
+                                       type = c("import", "import", "import", "import", "import", "import", "import", "import",
+                                                "import", "import", "import", "import", "import", "import")),
+                                       row.names = c(NA, -14L), class = "data.frame"))
 dotest("8.6", check8.6, structure(c("g", NA, "global"), dim = c(1L, 3L), dimnames = list(NULL, c("name", "package", "type"))))
-dotest("8.7", check8.7, structure(c("R6Class", "is.unit", "getMethod", "setGeneric",
-                                    "setMethod", "pvec", "aggregate", "approxfun", "coef", "median",
-                                    "coef", "globalVariables", "head", "tail", "R6", "grid", "methods",
-                                    "methods", "methods", "parallel", "stats", "stats", "stats",
-                                    "stats", "stats4", "utils", "utils", "utils", "import", "import",
+dotest("8.7", check8.7, structure(c("coef", "coef", "is.unit", "getMethod", "globalVariables",
+                                    "approxfun", "R6Class", "setGeneric", "aggregate", "head", "setMethod",
+                                    "pvec", "median", "tail", "stats", "stats4", "grid", "methods",
+                                    "utils", "stats", "R6", "methods", "stats", "utils", "methods",
+                                    "parallel", "stats", "utils", "import", "import", "import", "import",
                                     "import", "import", "import", "import", "import", "import", "import",
-                                    "import", "import", "import", "import", "import"),
-                                    dim = c(14L, 3L), dimnames = list(NULL, c("name", "package", "type"))))
+                                    "import", "import", "import"), dim = c(14L, 3L), dimnames = list(NULL, c("name", "package", "type"))))
 dotest("8.8", unname(check8.8), check8.2[["global"]])
 dotest("8.9", unname(check8.9), check8.3[["import"]])
 dotest("8.10", check8.10, check8.5)
