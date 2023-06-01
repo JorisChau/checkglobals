@@ -1,3 +1,3 @@
-# checkglobals 0.0.0.9999
+# checkglobals 0.1.0
 
-* Development version
+* Initial cran release

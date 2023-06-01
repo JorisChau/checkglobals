@@ -1,6 +1,6 @@
 Package: checkglobals
 Type: Package
-Title: On-the-fly detection of R-code dependencies
+Title: Static analysis of R-code dependencies
 Version: 0.1.0
 Date: 2023-06-01
 Authors@R: person("Joris", "Chau", email = "joris.chau@openanalytics.eu", role = c("aut", "cre"))
