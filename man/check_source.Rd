@@ -56,7 +56,7 @@ check_source(
 check_source(text = "cc <- function(m) stats::coef(m)")
 
 ## R-script from remote location
-\dontrun{
+\donttest{
   check_source(
     file = "https://raw.githubusercontent.com/rstudio/shiny-examples/main/004-mpg/app.R"
   )
