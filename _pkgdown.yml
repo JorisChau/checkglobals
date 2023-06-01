@@ -1,0 +1,6 @@
+destination: "docs"
+url: https://jorischau.github.io/checkglobals
+template:
+  bootstrap: 5
+  bslib:
+    headings-line-height: 2
