@@ -199,11 +199,37 @@ remote file location (e.g. a server or the web).</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   └─ coef <span style="color: #0000BB;">&lt;text&gt;#1</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## R-script from remote location</span></span></span>
-<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span>  <span class="fu">check_source</span><span class="op">(</span></span></span>
 <span class="r-in"><span>    file <span class="op">=</span> <span class="st">"https://raw.githubusercontent.com/rstudio/shiny-examples/main/004-mpg/app.R"</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> Packages required but not installed: <span style="color: #0000BB;">shiny</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">Unrecognized global functions or variables</span> <span style="color: #00BBBB;">──────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #555555; font-style: italic;">&lt;name&gt;</span>          <span style="color: #555555; font-style: italic;">&lt;location&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #00BBBB;">as.formula</span><span style="color: #BBBB00;">()</span>    <span style="color: #0000BB;">app.R#66</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #00BBBB;">boxplot</span><span style="color: #BBBB00;">()</span>       <span style="color: #0000BB;">app.R#66</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #00BBBB;">checkboxInput</span><span style="color: #BBBB00;">()</span> <span style="color: #0000BB;">app.R#13</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #00BBBB;">fluidPage</span><span style="color: #BBBB00;">()</span>     <span style="color: #0000BB;">app.R#13</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #00BBBB;">h3</span><span style="color: #BBBB00;">()</span>            <span style="color: #0000BB;">app.R#13</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #00BBBB;">mainPanel</span><span style="color: #BBBB00;">()</span>     <span style="color: #0000BB;">app.R#13</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #00BBBB;">plotOutput</span><span style="color: #BBBB00;">()</span>    <span style="color: #0000BB;">app.R#13</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #00BBBB;">reactive</span><span style="color: #BBBB00;">()</span>      <span style="color: #0000BB;">app.R#54</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #00BBBB;">renderPlot</span><span style="color: #BBBB00;">()</span>    <span style="color: #0000BB;">app.R#65</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #00BBBB;">renderText</span><span style="color: #BBBB00;">()</span>    <span style="color: #0000BB;">app.R#59</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #00BBBB;">selectInput</span><span style="color: #BBBB00;">()</span>   <span style="color: #0000BB;">app.R#13</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #00BBBB;">shinyApp</span><span style="color: #BBBB00;">()</span>      <span style="color: #0000BB;">app.R#75</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #00BBBB;">sidebarLayout</span><span style="color: #BBBB00;">()</span> <span style="color: #0000BB;">app.R#13</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #00BBBB;">sidebarPanel</span><span style="color: #BBBB00;">()</span>  <span style="color: #0000BB;">app.R#13</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #00BBBB;">textOutput</span><span style="color: #BBBB00;">()</span>    <span style="color: #0000BB;">app.R#13</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #00BBBB;">titlePanel</span><span style="color: #BBBB00;">()</span>    <span style="color: #0000BB;">app.R#13</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">Detected imported functions or variables</span> <span style="color: #00BBBB;">────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="font-weight: bold;">datasets</span>   [<span style="color: #BB0000;">◼</span><span style="color: #555555;">◻◻◻◻◻◻◻◻◻</span>] <span style="color: #555555; font-style: italic;">1/1</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   └─ mtcars <span style="color: #0000BB;">app.R#8</span></span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

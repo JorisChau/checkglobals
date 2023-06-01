@@ -244,19 +244,73 @@ remote file location (e.g. a server or the web).</p></li>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   └─ tail            <span style="color: #0000BB;">functions1.R#65</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## R-script from remote location</span></span></span>
-<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="fu">checkglobals</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  file <span class="op">=</span> <span class="st">"https://raw.githubusercontent.com/rstudio/shiny-examples/main/004-mpg/app.R"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> Packages required but not installed: <span style="color: #0000BB;">shiny</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">Unrecognized global functions or variables</span> <span style="color: #00BBBB;">──────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #555555; font-style: italic;">&lt;name&gt;</span>          <span style="color: #555555; font-style: italic;">&lt;location&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #00BBBB;">as.formula</span><span style="color: #BBBB00;">()</span>    <span style="color: #0000BB;">app.R#66</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #00BBBB;">boxplot</span><span style="color: #BBBB00;">()</span>       <span style="color: #0000BB;">app.R#66</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #00BBBB;">checkboxInput</span><span style="color: #BBBB00;">()</span> <span style="color: #0000BB;">app.R#13</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #00BBBB;">fluidPage</span><span style="color: #BBBB00;">()</span>     <span style="color: #0000BB;">app.R#13</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #00BBBB;">h3</span><span style="color: #BBBB00;">()</span>            <span style="color: #0000BB;">app.R#13</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #00BBBB;">mainPanel</span><span style="color: #BBBB00;">()</span>     <span style="color: #0000BB;">app.R#13</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #00BBBB;">plotOutput</span><span style="color: #BBBB00;">()</span>    <span style="color: #0000BB;">app.R#13</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #00BBBB;">reactive</span><span style="color: #BBBB00;">()</span>      <span style="color: #0000BB;">app.R#54</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #00BBBB;">renderPlot</span><span style="color: #BBBB00;">()</span>    <span style="color: #0000BB;">app.R#65</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #00BBBB;">renderText</span><span style="color: #BBBB00;">()</span>    <span style="color: #0000BB;">app.R#59</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #00BBBB;">selectInput</span><span style="color: #BBBB00;">()</span>   <span style="color: #0000BB;">app.R#13</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #00BBBB;">shinyApp</span><span style="color: #BBBB00;">()</span>      <span style="color: #0000BB;">app.R#75</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #00BBBB;">sidebarLayout</span><span style="color: #BBBB00;">()</span> <span style="color: #0000BB;">app.R#13</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #00BBBB;">sidebarPanel</span><span style="color: #BBBB00;">()</span>  <span style="color: #0000BB;">app.R#13</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #00BBBB;">textOutput</span><span style="color: #BBBB00;">()</span>    <span style="color: #0000BB;">app.R#13</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="color: #00BBBB;">titlePanel</span><span style="color: #BBBB00;">()</span>    <span style="color: #0000BB;">app.R#13</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">Detected imported functions or variables</span> <span style="color: #00BBBB;">────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="font-weight: bold;">datasets</span>   [<span style="color: #BB0000;">◼</span><span style="color: #555555;">◻◻◻◻◻◻◻◻◻</span>] <span style="color: #555555; font-style: italic;">1/1</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   └─ mtcars <span style="color: #0000BB;">app.R#8</span></span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## R-package from remote location</span></span></span>
-<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="check_pkg.html">check_pkg</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  pkg <span class="op">=</span> <span class="st">"https://cran.r-project.org/src/contrib/tinytest_1.4.1.tar.gz"</span>,</span></span>
 <span class="r-in"><span>  skip_globals <span class="op">=</span> <span class="st">"cluster"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> Packages required but not installed: <span style="color: #0000BB;">tinytest</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">Unrecognized global functions or variables</span> <span style="color: #00BBBB;">──────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> None detected</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">Detected imported functions or variables</span> <span style="color: #00BBBB;">────────────────────────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="font-weight: bold;">grDevices</span>   [<span style="color: #BB0000;">◼◼</span><span style="color: #555555;">◻◻◻◻◻◻◻◻</span>] <span style="color: #555555; font-style: italic;">2/17</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ├─ dev.off           <span style="color: #0000BB;">tinytest.R#619</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   └─ pdf               <span style="color: #0000BB;">tinytest.R#589</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="font-weight: bold;">parallel</span>    [<span style="color: #00BB00;">◼◼◼◼◼◼◼</span><span style="color: #555555;">◻◻◻</span>] <span style="color: #555555; font-style: italic;">7/17</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ├─ clusterCall       <span style="color: #0000BB;">tinytest.R#1046</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ├─ clusterEvalQ      <span style="color: #0000BB;">tinytest.R#880</span> <span style="color: #555555; font-style: italic;">and 1 more...</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ├─ clusterExport     <span style="color: #0000BB;">tinytest.R#1043</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ├─ makeCluster       <span style="color: #0000BB;">tinytest.R#1030</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ├─ parLapply         <span style="color: #0000BB;">tinytest.R#881</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   └─ stopCluster       <span style="color: #0000BB;">tinytest.R#1014</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="font-weight: bold;">tinytest</span>    [<span style="color: #BBBB00;">◼◼◼◼</span><span style="color: #555555;">◻◻◻◻◻◻</span>] <span style="color: #555555; font-style: italic;">4/17</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ├─ at_home           <span style="color: #0000BB;">tinytest.R#320</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ├─ expect_equal      <span style="color: #0000BB;">expectations.R#834</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ├─ expect_equivalent <span style="color: #0000BB;">expectations.R#834</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   └─ expect_null       <span style="color: #0000BB;">expectations.R#847</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="font-weight: bold;">utils</span>       [<span style="color: #BBBB00;">◼◼◼◼</span><span style="color: #555555;">◻◻◻◻◻◻</span>] <span style="color: #555555; font-style: italic;">4/17</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ├─ capture.output    <span style="color: #0000BB;">methods.R#197</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ├─ file_test         <span style="color: #0000BB;">tinytest.R#570</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ├─ getFromNamespace  <span style="color: #0000BB;">tinytest.R#384</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   └─ install.packages  <span style="color: #0000BB;">tinytest.R#1140</span></span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
