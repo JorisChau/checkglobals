@@ -47,7 +47,7 @@ check_pkg(
 )
 
 ## from bundled R-package
-\dontrun{
+\donttest{
   check_pkg(
     pkg = "https://cran.r-project.org/src/contrib/tinytest_1.4.1.tar.gz",
     skip_globals = "cluster"
