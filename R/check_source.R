@@ -60,11 +60,23 @@ check_source <- function(file, text, dir, include_compiled = FALSE, skip_globals
         file <- file.path(tmpdir, basename(file))
       }
     }
+    if(grepl("\\.(rmd|rmarkdown)$", file, ignore.case = TRUE)) {
+     stopifnot(
+       "knitr must be installed to check .Rmd or .Rmarkdown files." =
+         is.element("knitr", rownames(utils::installed.packages()))
+     )
+      if(!exists("tmpdir", inherits = FALSE)) {
+        tmpdir <- tempdir(check = TRUE)
+      }
+      file <- knitr::purl(
+        input = file,
+        output = file.path(tmpdir, sub("\\.(rmd|rmarkdown)$", ".R", basename(file), ignore.case = TRUE)),
+        quiet = TRUE
+      )
+    }
     stopifnot(
       "'file' not found, make sure that 'file' is the path to an existing R-script." =
         file.exists(file),
-      "'file' must be an R-script, run `knitr::purl()` on .Rmd files to extract the R-code first." =
-        !grepl("\\.(rmd|rmarkdown)$", file, ignore.case = TRUE),
       "'file' format not recognized, make sure that 'file' is an existing R-script." =
         grepl("\\.r$", file, ignore.case = TRUE)
     )
