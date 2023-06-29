@@ -87,9 +87,9 @@ dotest("5.4", lengths(check5.1$imports$srcref),
 ## check targz
 tmpdir <- tempdir()
 pkgdir <- tempfile(pattern = "testpkg", tmpdir = tmpdir)
-if(isTRUE(dir.create(pkgdir)) && isTRUE(file.copy(dirname(rdir), pkgdir, recursive = TRUE))) {
-  setwd(pkgdir)
-  system("R CMD build testpkg --no-manual --no-build-vignettes --no-resave-data")
+if(isTRUE(dir.create(pkgdir)) && isTRUE(file.copy(dirname(rdir), pkgdir, recursive = TRUE)) && nzchar(Sys.which("R"))) {
+  setwd(pkgdir); Sys.setenv("R_TESTS" = "");
+  system(paste(Sys.which("R"), "CMD build testpkg --no-manual --no-build-vignettes --no-resave-data"))
   if(file.exists("testpkg_1.0.tar.gz")) {
     check6 <- checkglobals(pkg = "testpkg_1.0.tar.gz")
     check7 <- checkglobals(pkg = file.path("file:", normalizePath("testpkg_1.0.tar.gz"), fsep = "//"))

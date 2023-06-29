@@ -2,6 +2,9 @@
 
 ## Author comments:
 
+**Please replace `\dontrun{} with `\donttest{}. (Comment by B. Altmann)**
+: replaced `\dontrun{}` by `\donttest{}` for all examples that download data from the web.
+
 **The Title field should be in title case (NOTE)**
 : changed title field to 'Static Analysis of R-Code Dependencies'.
 
