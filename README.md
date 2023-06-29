@@ -46,7 +46,7 @@ The {checkglobals}-package contains a single wrapper function
 R-packages. Individual R-scripts can be scanned for global variables and
 imported functions using the `file` argument:
 
-<img src="./README/screen-1.svg" width="85%" style="display: block; margin: auto;" />
+<img src="man/figures/README/screen-1.svg" width="85%" style="display: block; margin: auto;" />
 
 <br>
 
@@ -71,7 +71,7 @@ index the S3-object by its `globals` (`chk$globals`) or `imports`
 (`chk$imports`) components. For instance, we can print detailed source
 code references of the unrecognized global variables with:
 
-<img src="./README/screen-2.svg" width="85%" style="display: block; margin: auto;" />
+<img src="man/figures/README/screen-2.svg" width="85%" style="display: block; margin: auto;" />
 
 #### Remote files
 
@@ -80,7 +80,7 @@ also be a remote file location (e.g. a server or the web), in which case
 the remote file is first downloaded as a temporary file with
 `download.file()`.
 
-<img src="./README/screen-2b.svg" width="85%" style="display: block; margin: auto;" />
+<img src="man/figures/README/screen-2b.svg" width="85%" style="display: block; margin: auto;" />
 
 ### R Markdown files
 
@@ -89,7 +89,7 @@ or `.Rmarkdown`) file locations. For R Markdown files, the R code chunks
 are first extracted into a temporary R-script with `knitr::purl()`,
 which is then analyzed by `checkglobals()`:
 
-<img src="./README/screen-2c.svg" width="85%" style="display: block; margin: auto;" />
+<img src="man/figures/README/screen-2c.svg" width="85%" style="display: block; margin: auto;" />
 
 ### Folders
 
@@ -99,7 +99,7 @@ following example scans an R-Shiny app folder containing a `ui.R` and
 `server.R` file (source:
 <https://github.com/rstudio/shiny-examples/tree/main/018-datatable-options>),
 
-<img src="./README/screen-3.svg" width="85%" style="display: block; margin: auto;" />
+<img src="man/figures/README/screen-3.svg" width="85%" style="display: block; margin: auto;" />
 
 <br>
 
@@ -120,7 +120,7 @@ elsewhere in the R-package (i.e. not in the R-folder) are *not* scanned,
 as these are not coupled to the package NAMESPACE file. To illustrate,
 we can run `checkglobals()` on the checkglobals R-package folder itself:
 
-<img src="./README/screen-4.svg" width="85%" style="display: block; margin: auto;" />
+<img src="man/figures/README/screen-4.svg" width="85%" style="display: block; margin: auto;" />
 
 #### Bundled R-packages
 
@@ -131,11 +131,11 @@ on the local filesystem, or from a remote file location, such as the web
 
 ##### Local filesystem:
 
-<img src="./README/screen-5.svg" width="85%" style="display: block; margin: auto;" />
+<img src="man/figures/README/screen-5.svg" width="85%" style="display: block; margin: auto;" />
 
 ##### Remote file location:
 
-<img src="./README/screen-6.svg" width="85%" style="display: block; margin: auto;" />
+<img src="man/figures/README/screen-6.svg" width="85%" style="display: block; margin: auto;" />
 
 <br>
 
