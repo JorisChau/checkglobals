@@ -26,6 +26,8 @@
 #' \itemize{
 #' \item \code{all.names}, a logical value.  If \code{TRUE}, all object names are returned.
 #' If \code{FALSE}, names which begin with a \samp{.} are omitted. Defaults to \code{TRUE}.
+#' \item \code{includePkgs}, a character vector of imported package names. Only the imports for these packages are printed.
+#' Defaults to \code{NA}, which includes all detected packages in the printed output.
 #' \item \code{maxRef}, the maximum number of printed source code references per detected global/import.
 #' Defaults to 1.
 #' \item \code{maxLines}, the maximum number of printed lines per source code reference, only used if
@@ -67,6 +69,7 @@ print.checkglobals <- function(x, format = c("basic", "detail"), pattern, which 
   all.names <- dots$all.names %||% TRUE
   use_cli <- dots$use_cli %||% requireNamespace("cli", quietly = TRUE)
   maxWidth <- dots$maxWidth %||% if(use_cli) cli::console_width() else getOption("width") %||% 80L
+  includePkgs <- dots$includePkgs %||% NA_character_
   stopifnot(
     is.numeric(maxLines) && !is.na(maxLines),
     is.numeric(maxRef) && !is.na(maxRef),
@@ -103,9 +106,18 @@ print.checkglobals <- function(x, format = c("basic", "detail"), pattern, which 
         importslist <- mget(importnms, envir = x$imports$env, inherits = FALSE)
         imports <- unlist(importslist, recursive = FALSE)
         names(imports) <- rep(names(importslist), times = lengths(importslist))
-        imports <- sort(imports)
-        srcref_imports <- x$imports$srcref[names(imports)]
-        fmt_imports(imports, srcref_imports, use_cli)
+        if(is.character(includePkgs) && !all(is.na(includePkgs))) {
+          imports <- imports[imports %in% includePkgs]
+          importnms <- names(imports)
+        }
+        if(length(imports)) {
+          imports <- sort(imports)
+          srcref_imports <- x$imports$srcref[names(imports)]
+          fmt_imports(imports, srcref_imports, use_cli)
+        } else {
+          cat("\n")
+          fmt_success("None detected", use_cli)
+        }
       } else {
         cat("\n")
         fmt_success("None detected", use_cli)
