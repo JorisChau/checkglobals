@@ -454,8 +454,7 @@ SEXP matcharg_bynamepos(SEXP op, SEXP call, SEXP rho, const char **formals, cons
         SEXP callptr = call;
         const char *tag = "";
         int match = 0;
-        // fast scan
-        for (int j = 1; j < n; j++)
+        for (int j = 1; j < n; j++) // fast scan
         {
             callptr = CDR(callptr);
             actualj = STRING_ELT(actuals, j);
@@ -478,7 +477,7 @@ SEXP matcharg_bynamepos(SEXP op, SEXP call, SEXP rho, const char **formals, cons
             UNPROTECT(nprotect);
             return Rf_ScalarInteger(match);
         }
-        else // slow scan
+        else if(argpos > -1) // slow scan
         {
             if (!Rf_isNull(rho))
                 arg = PROTECT(matcharg_rho(op, call, actuals, rho, argpos));
@@ -488,7 +487,7 @@ SEXP matcharg_bynamepos(SEXP op, SEXP call, SEXP rho, const char **formals, cons
             return arg;
         }
     }
-    // no argument names
+    // no match found
     UNPROTECT(nprotect);
     return R_NilValue;
 }

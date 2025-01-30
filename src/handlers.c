@@ -24,7 +24,7 @@ SEXP operator(SEXP call, SEXP rho)
         if (Rf_isSymbol(cararg))
         {
             const char *carchar = CHAR(PRINTNAME(cararg));
-            if (strcmp(carchar, "::") == 0 || strcmp(carchar, "::") == 0)
+            if (strcmp(carchar, "::") == 0 || strcmp(carchar, ":::") == 0)
                 argarg = PROTECT(matcharg_bypos(cararg, arg, rho, 1));
             else if (strcmp(carchar, "get") == 0 || strcmp(carchar, "mget") == 0 || strcmp(carchar, "dynGet") == 0)
                 argarg = PROTECT(matcharg_bypos(cararg, arg, rho, 0));
@@ -76,6 +76,46 @@ void global_vars(SEXP call, SEXP rho, SEXP enclos, SEXP env0, Rboolean verbose)
     else if (verbose)
         Rprintf("ERROR: failed to evaluate call to globalVariables\n");
     UNPROTECT(2);
+}
+
+/*----------------------------------------------------------------------
+
+   special_funs
+
+   Handle special functions .onLoad and .onAttach by skipping
+   function closure forcing assignment of local variable definitions to
+   root environment.
+
+ */
+void special_funs(SEXP op, const char *opchar, SEXP call, SEXP rho, SEXP env0, R_args *args)
+{
+    SEXP sym = NULL;
+    PROTECT_INDEX ipx = 0;
+    int nprotect = 0;
+
+    if (strcmp(opchar, "<-") == 0 || strcmp(opchar, "=") == 0 || strcmp(opchar, "<<-") == 0)
+    {
+        PROTECT_WITH_INDEX(sym = CADR(call), &ipx);
+        nprotect++;
+    }
+    else if (strcmp(opchar, "assign") == 0 || strcmp(opchar, "delayedAssign") == 0)
+    {
+        PROTECT_WITH_INDEX(sym = matcharg_bypos(op, call, rho, 0), &ipx);
+        nprotect++;
+    }
+
+    if (sym)
+    {
+        if (TYPEOF(sym) == STRSXP && Rf_length(sym) == 1)
+            REPROTECT(sym = Rf_installChar(STRING_ELT(sym, 0)), ipx);
+        if (Rf_isSymbol(sym) && (strcmp(CHAR(PRINTNAME(sym)), ".onLoad") == 0 || strcmp(CHAR(PRINTNAME(sym)), ".onAttach") == 0))
+        {
+            if (args->verbose)
+                Rprintf("SPECIAL SYMBOL: %s\n", CHAR(PRINTNAME(sym)));
+            args->skip_closure = TRUE;
+        }
+    }
+    UNPROTECT(nprotect);
 }
 
 /*----------------------------------------------------------------------
@@ -147,20 +187,26 @@ void import_ns(SEXP op, const char *opchar, SEXP call, SEXP rho, SEXP envi, SEXP
   Handle `function` definitions by assigning to enclosing environment.
 
 */
-void inline_fun(SEXP call, SEXP enclos, Rboolean verbose)
+void inline_fun(SEXP call, SEXP enclos, R_args *args)
 {
-    SEXP args = CADR(call);
-    if (TYPEOF(args) == LISTSXP)
+    SEXP funargs = CADR(call);
+    if (TYPEOF(funargs) == LISTSXP)
     {
-        while (!Rf_isNull(args))
+        while (!Rf_isNull(funargs))
         {
-            if (verbose)
-                Rprintf("SYMBOL_FORMALS: %s\n", CHAR(PRINTNAME(TAG(args))));
-            Rf_defineVar(TAG(args), R_NilValue, enclos);
-            args = CDR(args);
+            if (args->verbose)
+                Rprintf("SYMBOL_FORMALS: %s\n", CHAR(PRINTNAME(TAG(funargs))));
+            Rf_defineVar(TAG(funargs), R_NilValue, enclos);
+            funargs = CDR(funargs);
         }
         Rf_defineVar(Rf_install(".__closure__"), PROTECT(Rf_ScalarLogical(TRUE)), enclos);
         UNPROTECT(1);
+        if (args->skip_closure)
+        {
+            Rf_defineVar(Rf_install(".__closure__"), PROTECT(Rf_ScalarLogical(FALSE)), enclos);
+            UNPROTECT(1);
+            args->skip_closure = FALSE;
+        }
     }
 }
 
@@ -243,6 +289,12 @@ void local_assign(SEXP op, const char *opchar, SEXP call, SEXP rho, SEXP env0, S
     }
     if (Rf_isSymbol(sym))
     {
+        /*
+            NOTE: It is too cumbersome to assign variables created with assign, delayedAssign, ...
+            exactly to the correct environments. As a consequence, these variables may be falsely
+            labeled as unrecognized globals, This is safer than the alternative of assigning
+            variables to the root environment by default if they do not belong there.
+        */
         if (verbose)
             Rprintf("SYMBOL: %s\n", CHAR(PRINTNAME(sym)));
         SEXP parent_env = enclos;
@@ -256,6 +308,20 @@ void local_assign(SEXP op, const char *opchar, SEXP call, SEXP rho, SEXP env0, S
             parent_env = ENCLOS(parent_env);
             REPROTECT(closure = Rf_findVarInFrame(parent_env, Rf_install(".__closure__")), ipx1);
             isclosure = (closure != R_UnboundValue) ? LOGICAL_ELT(closure, 0) : FALSE;
+        }
+        if (strcmp(opchar, "<<-") == 0 && parent_env != env0)
+        {
+            SEXP val0 = NULL;
+            PROTECT_INDEX ipx2 = 0;
+            PROTECT_WITH_INDEX(val0 = Rf_findVarInFrame(parent_env, sym), &ipx2);
+            Rboolean notinframe = (val0 == R_UnboundValue && parent_env != env0);
+            while (notinframe)
+            {
+                parent_env = ENCLOS(parent_env);
+                REPROTECT(val0 = Rf_findVarInFrame(parent_env, sym), ipx2);
+                notinframe = (val0 == R_UnboundValue && parent_env != env0);
+            }
+            UNPROTECT(1);
         }
         if (!setnullval)
         {
@@ -399,11 +465,18 @@ void compiled_call(SEXP op, SEXP call, SEXP rho, SEXP env0, Rboolean verbose)
   arguments to symbols.
 
 */
-void func_call(SEXP op, SEXP call, SEXP rho, int func_id)
+void func_call(SEXP op, SEXP call, SEXP rho, int func_id, const char *parent_opchar)
 {
     SEXP actualpos = NULL;
     const char *argname = functional_argnms[func_id];
     int argpos = functional_argpos[func_id];
+    /* NOTE: we choose to handle %>% explicitly.
+       |> does not need to be handled separately,
+       since syntax tree is the same with or without
+       a pipe.
+    */
+    if (strcmp(parent_opchar, "%>%") == 0)
+        argpos -= 1;
 
     if (func_id >= 19 && func_id <= 25)
         actualpos = PROTECT(matcharg_bynamepos(op, call, R_NilValue, formals_parallel[func_id - 19], argname, argpos - 1));
@@ -413,17 +486,20 @@ void func_call(SEXP op, SEXP call, SEXP rho, int func_id)
     if (!Rf_isNull(actualpos))
         argpos = INTEGER_ELT(actualpos, 0);
 
-    int i = 0;
-    while (i < argpos && !Rf_isNull(call))
+    if (argpos > 0)
     {
-        call = CDR(call);
-        i++;
-    }
-    SEXP func_arg = CAR(call);
-    if (TYPEOF(func_arg) == STRSXP && Rf_length(func_arg) == 1)
-    {
-        SETCAR(call, PROTECT(Rf_coerceVector(func_arg, SYMSXP)));
-        UNPROTECT(1);
+        int i = 0;
+        while (i < argpos && !Rf_isNull(call))
+        {
+            call = CDR(call);
+            i++;
+        }
+        SEXP func_arg = CAR(call);
+        if (TYPEOF(func_arg) == STRSXP && Rf_length(func_arg) == 1)
+        {
+            SETCAR(call, PROTECT(Rf_coerceVector(func_arg, SYMSXP)));
+            UNPROTECT(1);
+        }
     }
     UNPROTECT(1);
 }

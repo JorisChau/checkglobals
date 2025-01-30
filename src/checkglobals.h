@@ -19,9 +19,11 @@ extern const char *formals_parallel[7][12];
 typedef struct R_args
 {
     int skip[7];
+    Rboolean is_pkg;
     Rboolean compiled;
     Rboolean verbose;
-    Rboolean include_datasets;
+    Rboolean skip_closure;
+    const char *parent_opchar;
 } R_args;
 
 // helpers
@@ -33,15 +35,17 @@ SEXP operator(SEXP call, SEXP rho);
 void global_vars(SEXP call, SEXP rho, SEXP enclos, SEXP env0, Rboolean verbose);
 void import_ns(SEXP op, const char *opchar, SEXP call, SEXP rho, SEXP envi, SEXP enclos, Rboolean verbose);
 void fun_call(SEXP op, SEXP call, SEXP enclos);
-void inline_fun(SEXP call, SEXP enclos, Rboolean verbose);
+void inline_fun(SEXP call, SEXP enclos, R_args *args);
 void local_assign(SEXP op, const char *opchar, SEXP call, SEXP rho, SEXP env0, SEXP enclos, Rboolean verbose);
 void import_fun(SEXP op, SEXP call, SEXP rho, SEXP envi, SEXP enclos, SEXP srcrefi, Rboolean verbose);
 void local_expr(SEXP enclos);
 void compiled_call(SEXP op, SEXP call, SEXP rho, SEXP env0, Rboolean verbose);
-void func_call(SEXP op, SEXP call, SEXP rho, int func_id);
+void func_call(SEXP op, SEXP call, SEXP rho, int func_id, const char *parent_opchar);
 void add_reserved_R6(SEXP enclos);
+void special_funs(SEXP op, const char *opchar, SEXP call, SEXP rho, SEXP env0, R_args *args);
 
 // exported function
-SEXP walk_expr(SEXP expr, SEXP env0, SEXP envi, SEXP envg, SEXP rho, SEXP srcrefi, SEXP srcrefg, SEXP R_include_compiled, SEXP R_verbose, SEXP R_include_datasets);
+SEXP walk_expr(SEXP expr, SEXP env0, SEXP envi, SEXP envg, SEXP rho, SEXP srcrefi, SEXP srcrefg,
+               SEXP R_is_pkg, SEXP R_include_compiled, SEXP R_verbose);
 
 #endif

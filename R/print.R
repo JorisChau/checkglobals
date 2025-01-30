@@ -82,13 +82,17 @@ print.checkglobals <- function(x, format = c("basic", "detail"), pattern, which 
   }
   globalnms <- character(0)
   importnms <- character(0)
+  loaded_pkgs <- character(0)
   if(is.element("global", which)) {
     globalnms <- objects(x$globals$env, pattern = pattern, all.names = all.names, sorted = TRUE)
   }
   if(is.element("import", which)) {
     importnms <- objects(x$imports$env, pattern = pattern, all.names = all.names, sorted = TRUE)
+    if(missing(pattern)) {
+      loaded_pkgs <- structure(x$loaded_pkgs, .Names = rep("?", length(x$loaded_pkgs)))
+    }
   }
-  if(length(globalnms) || length(importnms)) {
+  if(length(globalnms) || (length(importnms) || length(loaded_pkgs))) {
     if(is.element("global", which)) {
       fmt_h1("Unrecognized global functions or variables", maxWidth, use_cli)
       if(length(globalnms)) {
@@ -102,16 +106,26 @@ print.checkglobals <- function(x, format = c("basic", "detail"), pattern, which 
     }
     if(is.element("import", which)) {
       fmt_h1("Detected imported functions or variables", maxWidth, use_cli)
-      if(length(importnms)) {
-        importslist <- mget(importnms, envir = x$imports$env, inherits = FALSE)
-        imports <- unlist(importslist, recursive = FALSE)
-        names(imports) <- rep(names(importslist), times = lengths(importslist))
-        if(is.character(includePkgs) && !all(is.na(includePkgs))) {
-          imports <- imports[imports %in% includePkgs]
-          importnms <- names(imports)
+      if(length(importnms) || length(loaded_pkgs)) {
+        if(length(importnms)) {
+          importslist <- mget(importnms, envir = x$imports$env, inherits = FALSE)
+          imports <- unlist(importslist, recursive = FALSE)
+          if(length(loaded_pkgs))
+            loaded_pkgs <- setdiff(loaded_pkgs, unique(imports))
+          names(imports) <- rep(names(importslist), times = lengths(importslist))
+        } else {
+          imports <- importslist <- NULL
         }
-        if(length(imports)) {
-          imports <- sort(imports)
+        if(is.character(includePkgs) && !all(is.na(includePkgs))) {
+          if(length(imports)) {
+            imports <- imports[imports %in% includePkgs]
+            importnms <- names(imports)
+          }
+          if(length(loaded_pkgs))
+            loaded_pkgs <- loaded_pkgs[loaded_pkgs %in% includePkgs]
+        }
+        if(length(imports) || length(loaded_pkgs)) {
+          imports <- sort(c(imports, loaded_pkgs))
           srcref_imports <- x$imports$srcref[names(imports)]
           fmt_imports(imports, srcref_imports, use_cli)
         } else {
@@ -233,7 +247,7 @@ print.checkglobalsg <- function(x, format = "basic", pattern, ...) {
 #' print(chk$imports, use_cli = FALSE)
 #' @export
 print.checkglobalsi <- function(x, format = "basic", pattern, ...) {
-  print.checkglobals(x = list(imports = x), format, pattern, which = "import", ...)
+  print.checkglobals(x = list(imports = x, loaded_pkgs = character(0)), format, pattern, which = "import", ...)
 }
 
 fmt_globals <- function(globals, srcref, use_cli) {
@@ -260,6 +274,9 @@ fmt_globals <- function(globals, srcref, use_cli) {
 }
 
 fmt_imports <- function(imports, srcref, use_cli) {
+  if(any(!nzchar(names(imports)))) {
+    names(imports)[!nzchar(names(imports))] <- "?"
+  }
   funsplit <- split(names(imports), f = imports)
   funinfo <- fmt_align(list(names(imports), fmt_srcref(srcref, use_cli)), use_cli = use_cli)
   if(use_cli) {
@@ -340,27 +357,31 @@ fmt_srcref <- function(srcref, use_cli) {
   vapply(
     srcref,
     FUN = function(src) {
-      srcfile <- attr(src[[1]], "srcfile")
-      if(use_cli) {
-        paste(
-          cli::col_blue(
-            cli::style_hyperlink(
-              text = paste(basename(srcfile$filename), src[[1]][1], sep = "#"),
-              url = paste("file:", srcfile$filename, sep = "//"),
-              params = list(line = src[[1]][1], col = 1)
-            )
-          ),
-          if(length(src) > 1) {
-            cli::col_grey(cli::style_italic(sprintf("and %d more...", length(src) - 1)))
-          }
-        )
+      if(!is.null(src)) {
+        srcfile <- attr(src[[1]], "srcfile")
+        if(use_cli) {
+          paste(
+            cli::col_blue(
+              cli::style_hyperlink(
+                text = paste(basename(srcfile$filename), src[[1]][1], sep = "#"),
+                url = paste("file:", srcfile$filename, sep = "//"),
+                params = list(line = src[[1]][1], col = 1)
+              )
+            ),
+            if(length(src) > 1) {
+              cli::col_grey(cli::style_italic(sprintf("and %d more...", length(src) - 1)))
+            }
+          )
+        } else {
+          paste(
+            paste(basename(srcfile$filename), src[[1]][1], sep = "#"),
+            if(length(src) > 1) {
+              sprintf("and %d more...", length(src) - 1)
+            }
+          )
+        }
       } else {
-        paste(
-          paste(basename(srcfile$filename), src[[1]][1], sep = "#"),
-          if(length(src) > 1) {
-            sprintf("and %d more...", length(src) - 1)
-          }
-        )
+        ""
       }
     },
     FUN.VALUE = character(1),

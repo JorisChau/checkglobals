@@ -126,7 +126,7 @@ static void walk(SEXP call, SEXP enclos, SEXP env0, SEXP envi, SEXP envg, SEXP r
             if (type == VECSXP || type == EXPRSXP)
             {
                 calli = PROTECT(VECTOR_ELT(call, i));
-                if (TYPEOF(calli) == STRSXP && args->include_datasets)
+                if (TYPEOF(calli) == STRSXP && args->is_pkg && enclos == env0)
                 {
                     Rf_defineVar(Rf_installChar(STRING_ELT(calli, 0)), R_NilValue, env0);
                     if (args->verbose)
@@ -159,79 +159,86 @@ static void walk(SEXP call, SEXP enclos, SEXP env0, SEXP envi, SEXP envg, SEXP r
         op = PROTECT(operator(call, rho));
         opchar = CHAR(PRINTNAME(op));
         // 2) global variables
-        if (strcmp(opchar, "globalVariables") == 0)
+        if (args->is_pkg && ENCLOS(enclos) == env0 && strcmp(opchar, "globalVariables") == 0)
             global_vars(call, rho, enclos, env0, args->verbose);
         // 3) import namespaces
         if (strcmp(opchar, "library") == 0 || strcmp(opchar, "require") == 0 || strcmp(opchar, "requireNamespace") == 0 || strcmp(opchar, "attachNamespace") == 0)
             import_ns(op, opchar, call, rho, envi, enclos, args->verbose);
-        // 4) inline function calls
+        // 4) special functions
+        if (args->is_pkg && ENCLOS(enclos) == env0 && strmatch(opchar, assign_nms, 9) > -1)
+            special_funs(op, opchar, call, rho, env0, args);
+        // 5) inline function calls
         fun_call(op, call, enclos);
-        // 5) local assignment
+        // 6) local assignment
         if (strmatch(opchar, assign_nms, 9) > -1)
             local_assign(op, opchar, call, rho, env0, enclos, args->verbose);
-        // 6) external function calls
+        // 7) external function calls
         if (strcmp(opchar, "::") == 0 || strcmp(opchar, ":::") == 0)
             import_fun(op, call, rho, envi, enclos, srcrefi, args->verbose);
-        // 7) inline functions
+        // 8) inline functions
         if (strcmp(opchar, "function") == 0)
-            inline_fun(call, enclos, args->verbose);
-        // 8) local expressions
+            inline_fun(call, enclos, args);
+        // 9) local expressions
         if (strcmp(opchar, "local") == 0)
             local_expr(enclos);
-        // 9) functional calls
+        // 10) functional calls
         is_func = strmatch(opchar, functionals, 33);
         if (is_func > -1)
-            func_call(op, call, rho, is_func);
-        // 10) compiled function calls
+            func_call(op, call, rho, is_func, args->parent_opchar);
+        // 11) compiled function calls
         if (!(args->compiled) && strmatch(opchar, compiled_nms, 7) > -1)
             compiled_call(op, call, rho, env0, args->verbose);
-        // 11) extra reserved names R6Class
+        // 12) extra reserved names R6Class
         if (strcmp(opchar, "R6Class") == 0)
             add_reserved_R6(enclos);
         // unprotect operator
         UNPROTECT(1);
-        // 11) find globals
+        // 13) find globals
         is_skip = strmatch(opchar, skip_nms, 7);
         if (is_skip > -1 && args->skip[is_skip] < 1)
         {
-            if (args->verbose)
-                Rprintf("Note: skipping globals in calls to '%s'\n", opchar);
-            (args->skip)[is_skip] = 1;
+                if (args->verbose)
+                    Rprintf("Note: skipping globals in calls to '%s'\n", opchar);
+                (args->skip)[is_skip] = 1;
         }
         if (is_skip == -1)
         {
-            SEXP calli = NULL, enclosi = NULL;
-            R_len_t n = Rf_length(call);
-            for (R_len_t i = 0; i < n; i++)
-            {
-                calli = CAR(call);
-                if (Rf_isSymbol(calli))
+                SEXP calli = NULL, enclosi = NULL;
+                R_len_t n = Rf_length(call);
+                for (R_len_t i = 0; i < n; i++)
                 {
-                    if (strcmp(opchar, "::") != 0 && strcmp(opchar, ":::") != 0 && ((strcmp(opchar, "@") != 0 && strcmp(opchar, "$") != 0) || i == 1))
+                    calli = CAR(call);
+                    if (Rf_isSymbol(calli))
                     {
-                        assign_global(calli, opchar, enclos, i, n, envg, srcrefg);
+                        if (strcmp(opchar, "::") != 0 && strcmp(opchar, ":::") != 0 && ((strcmp(opchar, "@") != 0 && strcmp(opchar, "$") != 0) || i == 1))
+                        {
+                            assign_global(calli, opchar, enclos, i, n, envg, srcrefg);
+                        }
                     }
+                    else if (Rf_isPairList(calli) && !Rf_isNull(calli))
+                    {
+                        enclosi = PROTECT(init_enclos(calli, enclos, i, n, type));
+                        args->parent_opchar = opchar;
+                        walk(calli, enclosi, env0, envi, envg, rho, srcrefi, srcrefg, args);
+                        UNPROTECT(1);
+                    }
+                    call = CDR(call);
                 }
-                else if (Rf_isPairList(calli) && !Rf_isNull(calli))
-                {
-                    enclosi = PROTECT(init_enclos(calli, enclos, i, n, type));
-                    walk(calli, enclosi, env0, envi, envg, rho, srcrefi, srcrefg, args);
-                    UNPROTECT(1);
-                }
-                call = CDR(call);
-            }
         }
     }
 }
 
-SEXP walk_expr(SEXP expr, SEXP env0, SEXP envi, SEXP envg, SEXP rho, SEXP srcrefi, SEXP srcrefg, SEXP R_include_compiled, SEXP R_verbose, SEXP R_include_datasets)
+SEXP walk_expr(SEXP expr, SEXP env0, SEXP envi, SEXP envg, SEXP rho, SEXP srcrefi, SEXP srcrefg,
+               SEXP R_is_pkg, SEXP R_include_compiled, SEXP R_verbose)
 {
     // settings
     R_args args = {
         .skip = {0, 0, 0, 0, 0, 0, 0},
+        .is_pkg = LOGICAL_ELT(R_is_pkg, 0),
         .compiled = LOGICAL_ELT(R_include_compiled, 0),
         .verbose = LOGICAL_ELT(R_verbose, 0),
-        .include_datasets = LOGICAL_ELT(R_include_datasets, 0)};
+        .skip_closure = FALSE,
+        .parent_opchar = ""};
     // recurse
     walk(expr, env0, env0, envi, envg, rho, srcrefi, srcrefg, &args);
     // no return value

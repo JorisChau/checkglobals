@@ -13,6 +13,7 @@ Imports:
 	  stats,
 	  methods,
 	  parallel,
+	  tools,
 	  pkgA
 Depends: 
     R (>= 2.15)
