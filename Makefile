@@ -1,5 +1,6 @@
 PKGNAME=checkglobals
 PKGVERS=$(shell sed -n "s/Version: *\([^ ]*\)/\1/p" DESCRIPTION)
+PWD=$(shell pwd)
 
 all: check clean
 
@@ -20,6 +21,9 @@ install: build
 
 check: build
 	R CMD check $(PKGNAME)_$(PKGVERS).tar.gz
+
+rchk: build
+	docker run --rm -v $(PWD):/rchk/$(PKGNAME) kalibera/rchk:latest /rchk/$(PKGNAME)/$(PKGNAME)_$(PKGVERS).tar.gz
 
 clean:
 	$(RM) -r $(PKGNAME).Rcheck/
