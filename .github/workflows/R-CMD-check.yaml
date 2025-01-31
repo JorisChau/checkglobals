@@ -2,14 +2,28 @@
 # Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
 on:
   push:
-    branches: [main, master]
+    branches:
+      - main
+      - master
   pull_request:
-    branches: [main, master]
-  workflow_dispatch:
+    branches:
+      - main
+      - master
 
 name: R-CMD-check
 
 jobs:
+  # run-rchk:
+  #   runs-on: ubuntu-latest
+  #
+  #   container:
+  #     image: rhub/ubuntu-rchk
+  #     options: --user=root
+  #
+  #   steps:
+  #     - uses: actions/checkout@v1
+  #     - uses: r-lib/actions/run-rchk@master
+
   R-CMD-check:
     runs-on: ${{ matrix.config.os }}
 
@@ -19,32 +33,45 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {os: macOS-latest,   r: 'release'}
-          - {os: windows-latest, r: 'release'}
-          - {os: windows-latest, r: 'oldrel-1'}
-          - {os: windows-latest, r: '4.1'}
-          - {os: ubuntu-latest, r: 'devel', http-user-agent: 'release'}
+          - {os: macOS-latest, r: 'next'}
+          - {os: macOS-latest, r: 'release'}
+          - {os: windows-latest, r: 'devel', rtools: '44'}
+          - {os: windows-latest, r: 'next', rtools: '44'}
+          - {os: windows-latest, r: 'release', rtools: '44'}
+          - {os: ubuntu-latest, r: 'devel'}
+          - {os: ubuntu-latest, r: 'next'}
           - {os: ubuntu-latest, r: 'release'}
-          - {os: ubuntu-latest, r: 'oldrel-1'}
-          - {os: ubuntu-latest, r: '4.1'}
+          - {os: ubuntu-latest, r: 'oldrel'}
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
 
     steps:
+      - name: Configure git
+        run: git config --global core.autocrlf false
+
       - uses: actions/checkout@v2
-        with:
-          ref: 'master'
+
       - uses: r-lib/actions/setup-pandoc@v2
+
       - uses: r-lib/actions/setup-r@v2
         with:
           r-version: ${{ matrix.config.r }}
+          rtools-version: ${{ matrix.config.rtools }}
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck
+          extra-packages: rcmdcheck
           needs: check
-      - uses: r-lib/actions/setup-tinytex@v2
+
       - uses: r-lib/actions/check-r-package@v2
+
+      - name: Upload check results
+        if: failure()
+        uses: actions/upload-artifact@main
+        with:
+          name: ${{ runner.os }}-r${{ matrix.config.r }}-results
+          path: check
