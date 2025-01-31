@@ -24,6 +24,8 @@ typedef struct R_args
     Rboolean verbose;
     Rboolean skip_closure;
     const char *parent_opchar;
+    int pending_exit[3];  
+    int pending_lazyenv;
 } R_args;
 
 // helpers
@@ -32,6 +34,7 @@ int strmatch(const char *target, const char **table, int len);
 SEXP matcharg_bypos(SEXP op, SEXP call, SEXP rho, int argpos);
 SEXP matcharg_bynamepos(SEXP op, SEXP call, SEXP rho, const char **formals, const char *argname, int argpos);
 SEXP operator(SEXP call, SEXP rho);
+SEXP find_var_in_closure(SEXP var, SEXP env);
 void global_vars(SEXP call, SEXP rho, SEXP enclos, SEXP env0, Rboolean verbose);
 void import_ns(SEXP op, const char *opchar, SEXP call, SEXP rho, SEXP envi, SEXP enclos, Rboolean verbose);
 void fun_call(SEXP op, SEXP call, SEXP enclos);
@@ -39,6 +42,7 @@ void inline_fun(SEXP call, SEXP enclos, R_args *args);
 void local_assign(SEXP op, const char *opchar, SEXP call, SEXP rho, SEXP env0, SEXP enclos, Rboolean verbose);
 void import_fun(SEXP op, SEXP call, SEXP rho, SEXP envi, SEXP enclos, SEXP srcrefi, Rboolean verbose);
 void local_expr(SEXP enclos);
+void exit_expr(SEXP call, SEXP enclos, R_args *args);
 void compiled_call(SEXP op, SEXP call, SEXP rho, SEXP env0, Rboolean verbose);
 void func_call(SEXP op, SEXP call, SEXP rho, int func_id, const char *parent_opchar);
 void add_reserved_R6(SEXP enclos);

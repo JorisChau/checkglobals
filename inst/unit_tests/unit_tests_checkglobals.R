@@ -17,12 +17,12 @@ dotest("1.1", as.list(check1$globals$env), list(fLoad = "function", `%>%` = "fun
 dotest("1.2", as.list(check1$imports$env),
        list(coef = c("stats", "stats4"), is.unit = "grid", getMethod = "methods", approxfun = "stats",
             R6Class = "R6", setGeneric = "methods", aggregate = "stats", head = "utils", setMethod = "methods",
-            pvec = "parallel", median = "stats", tail = "utils"))
+            pvec = "parallel", median = "stats", sd = "stats", tail = "utils"))
 dotest("1.3", lengths(check1$globals$srcref), c(fLoad = 1L, `%>%` = 1L, getMethod = 1L, xauth = 1L, fLoad2 = 1L,
                                                 G = 1L, fAttach = 1L, g = 13L, sysdata = 1L, pvec = 2L, dataset = 1L))
 dotest("1.4", lengths(check1$imports$srcref),
        c(coef = 2L, getMethod = 1L, approxfun = 1L, R6Class = 1L, setGeneric = 1L, aggregate = 1L,
-         head = 1L, setMethod = 1L, pvec = 1L, tail = 1L, is.unit = 1L, median = 2L))
+         head = 1L, setMethod = 1L, pvec = 1L, sd = 1L, tail = 1L, is.unit = 1L, median = 2L))
 
 ## check verbose messages
 rexpr <- parse(file = system.file("unit_tests", "pkg", "testpkg", "R", "functions1.R", package = "checkglobals"), keep.source = TRUE)
@@ -53,7 +53,10 @@ dotest("2.1", check2.1, c("SYMBOL: f1", "SYMBOL_FORMALS: y", "SYMBOL: ff1", "SYM
                           "SYMBOL_FORMALS: y", "SYMBOL: set<-", "SYMBOL: f16b<-", "SYMBOL_FORMALS: var",
                           "SYMBOL_FORMALS: value", "SYMBOL: var", "SYMBOL: f17", "SYMBOL_FORMALS: y",
                           "SYMBOL: f18", "PKG_SYMBOL: R6, R6Class", "SYMBOL_FORMALS: ...",
-                          "SYMBOL_FORMALS: ...", "SYMBOL: f19", "SYMBOL_FORMALS: y", "SYMBOL: .onLoad"))
+                          "SYMBOL_FORMALS: ...", "SYMBOL: f19", "SYMBOL_FORMALS: y", "SYMBOL: .onLoad",
+                          "SYMBOL: f20", "SYMBOL_FORMALS: y", "SYMBOL: ff20", "SYMBOL: x",
+                          "PKG_SYMBOL: stats, sd", "SYMBOL: f21", "SYMBOL_FORMALS: y",
+                          "SPECIAL SYMBOL: on.exit", "SYMBOL: x1"))
 
 rexpr <- parse(file = system.file("unit_tests", "pkg", "testpkg", "R", "aaa.R", package = "checkglobals"), keep.source = TRUE)
 check2.2 <- capture.output(invisible(checkglobals:::.check_internal(rexpr, is_pkg = TRUE, verbose = TRUE)))
@@ -88,11 +91,11 @@ dotest("5.2", as.list(check5.1$imports$env),
             getMethod = "methods", globalVariables = "utils", approxfun = "stats",
             R6Class = "R6", setGeneric = "methods", aggregate = "stats",
             head = "utils", setMethod = "methods", pvec = "parallel",
-            median = "stats", tail = "utils"))
+            median = "stats", sd = "stats", tail = "utils"))
 dotest("5.3", lengths(check5.1$globals$srcref), c(`%>%` = 1L, fLoad2 = 1L, g = 14L, fAttach2 = 1L))
 dotest("5.4", lengths(check5.1$imports$srcref),
        c(coef = 2L, maintainer = 1L, getMethod = 1L, globalVariables = 2L, approxfun = 1L, R6Class = 1L, setGeneric = 1L,
-         aggregate = 1L, head = 1L, setMethod = 1L, pvec = 2L, tail = 1L, is.unit = 1L, median = 2L))
+         aggregate = 1L, head = 1L, setMethod = 1L, pvec = 2L, sd = 1L, tail = 1L, is.unit = 1L, median = 2L))
 
 ## check targz
 tmpdir <- tempdir()
@@ -125,7 +128,7 @@ dotest("8.1", check8.1, list(global = "g", import = c("aggregate", "getMethod", 
 dotest("8.2", check8.2, list(global = c("%>%", "fAttach2", "fLoad2", "g")))
 dotest("8.3", check8.3, list(import = c("coef", "is.unit", "maintainer", "getMethod", "globalVariables",
                                         "approxfun", "R6Class", "setGeneric", "aggregate", "head", "setMethod",
-                                        "pvec", "median", "tail"),
+                                        "pvec", "median", "sd", "tail"),
                              package = c("stats", "stats4", "grid", "utils", "methods", "R6", "parallel")))
 dotest("8.4", check8.4, structure(list(name = c("%>%", "fAttach2", "fLoad2", "g"),
                                        package = c(NA_character_, NA_character_, NA_character_, NA_character_),
@@ -133,23 +136,23 @@ dotest("8.4", check8.4, structure(list(name = c("%>%", "fAttach2", "fLoad2", "g"
                                   row.names = c(NA, -4L)))
 dotest("8.5", check8.5, structure(list(name = c("coef", "coef", "is.unit", "maintainer", "getMethod",
                                                 "globalVariables", "approxfun", "R6Class", "setGeneric", "aggregate",
-                                                "head", "setMethod", "pvec", "median", "tail"),
+                                                "head", "setMethod", "pvec", "median", "sd", "tail"),
                                        package = c("stats", "stats4", "grid", "utils", "methods", "utils", "stats", "R6", "methods",
-                                                   "stats", "utils", "methods", "parallel", "stats", "utils"),
+                                                   "stats", "utils", "methods", "parallel", "stats", "stats", "utils"),
                                        type = c("import", "import", "import", "import", "import", "import", "import", "import", "import",
-                                                "import", "import", "import", "import", "import", "import")),
-                                  row.names = c(NA, -15L), class = "data.frame"))
+                                                "import", "import", "import", "import", "import", "import", "import")),
+                                  row.names = c(NA, -16L), class = "data.frame"))
 dotest("8.6", check8.6, structure(c("%>%", "fAttach2", "fLoad2", "g", NA, NA, NA, NA,
                                     "global", "global", "global", "global"), dim = 4:3, dimnames = list(
                                       NULL, c("name", "package", "type"))))
 dotest("8.7", check8.7, structure(c("coef", "coef", "is.unit", "maintainer", "getMethod",
                                     "globalVariables", "approxfun", "R6Class", "setGeneric", "aggregate",
-                                    "head", "setMethod", "pvec", "median", "tail", "stats", "stats4",
+                                    "head", "setMethod", "pvec", "median", "sd", "tail", "stats", "stats4",
                                     "grid", "utils", "methods", "utils", "stats", "R6", "methods",
-                                    "stats", "utils", "methods", "parallel", "stats", "utils", "import",
-                                    "import", "import", "import", "import", "import", "import", "import",
+                                    "stats", "utils", "methods", "parallel", "stats", "stats", "utils", "import",
+                                    "import", "import", "import", "import", "import", "import", "import", "import",
                                     "import", "import", "import", "import", "import", "import", "import"),
-                                  dim = c(15L, 3L), dimnames = list(NULL, c("name", "package", "type"))))
+                                  dim = c(16L, 3L), dimnames = list(NULL, c("name", "package", "type"))))
 dotest("8.8", unname(check8.8), check8.2[["global"]])
 dotest("8.9", unname(check8.9), check8.3[["import"]])
 dotest("8.10", check8.10, check8.5)

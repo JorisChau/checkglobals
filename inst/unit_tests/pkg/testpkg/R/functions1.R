@@ -156,3 +156,15 @@ f19 <- function(y) {
   fLoad2(y)
 }
 
+f20 <- function(y) {
+  ff20 <- function() {
+    stats::sd(x)
+  }
+  x <- c(-1, 1)
+  return(ff20)
+}
+
+f21 <- function(y) {
+  on.exit(rm(x1))
+  invisible(x1 <- y)
+}

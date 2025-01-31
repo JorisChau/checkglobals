@@ -95,10 +95,8 @@ check_pkg <- function(pkg = ".", include_compiled = FALSE, skip_globals = NULL) 
     is_pkg <- (lengths(ns$imports) == 1L)
     is_pkg[!is_pkg] <- vapply(ns$imports[!is_pkg], function(x) !is.null(names(x)), logical(1))
     pkgs <- ns$imports[is_pkg]
-    if(any(is_pkg)) {
-      ns_pkgs <- unlist(pkgs, recursive = FALSE)
-    }
     found_pkgs <- .find_pkgs(pkgs)
+    ns_pkgs <- c(ns_pkgs, names(found_pkgs))
     missing_pkgs <- names(found_pkgs)[!found_pkgs]
     pkgs <- pkgs[found_pkgs]
     if(length(pkgs)) {
@@ -160,7 +158,7 @@ check_pkg <- function(pkg = ".", include_compiled = FALSE, skip_globals = NULL) 
   pkgs <- unique(get(".__pkgs__", envir = check$imports, inherits = FALSE))
   rm(list = ".__pkgs__", envir = check$imports, inherits = FALSE)
   missing_pkgs <- union(missing_pkgs, pkgs[!.find_pkgs(pkgs)])
-  pkgs <- setdiff(pkgs, missing_pkgs)
+  pkgs <- setdiff(pkgs, c(basename(pkg), missing_pkgs))
   if(length(pkgs)) {
     pkgfuns <-  lapply(unlist(pkgs), function(p) {
       ns <- try(getNamespace(p), silent = TRUE)
