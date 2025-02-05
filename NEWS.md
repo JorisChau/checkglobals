@@ -1,6 +1,6 @@
 # checkglobals 0.1.3
 
-* Handle .onAttach and .onLoad in `check_pkg`
+* Added support for .onAttach, .onLoad and on.exit
 * Additional display options in `print.checkglobals`
 * Added specific handlers for `<<-` and `%>%` (followed by a functional)
 * Minor updates internal C functions

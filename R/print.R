@@ -89,7 +89,7 @@ print.checkglobals <- function(x, format = c("basic", "detail"), pattern, which 
   if(is.element("import", which)) {
     importnms <- objects(x$imports$env, pattern = pattern, all.names = all.names, sorted = TRUE)
     if(missing(pattern)) {
-      loaded_pkgs <- structure(x$loaded_pkgs, .Names = rep("?", length(x$loaded_pkgs)))
+      loaded_pkgs <- structure(x$loaded_pkgs, .Names = rep("n/a", length(x$loaded_pkgs)))
     }
   }
   if(length(globalnms) || (length(importnms) || length(loaded_pkgs))) {
@@ -275,10 +275,23 @@ fmt_globals <- function(globals, srcref, use_cli) {
 
 fmt_imports <- function(imports, srcref, use_cli) {
   if(any(!nzchar(names(imports)))) {
-    names(imports)[!nzchar(names(imports))] <- "?"
+    na_nms <- !nzchar(names(imports))
+    names(imports)[na_nms] <- "n/a"
+    if(use_cli){
+      funinfo <- fmt_align(
+        list(
+          ifelse(na_nms, cli::col_grey(names(imports)), cli::col_white(names(imports))),
+          fmt_srcref(srcref, use_cli)
+        ),
+        use_cli = TRUE
+      )
+    } else {
+      funinfo <- fmt_align(list(names(imports), fmt_srcref(srcref, use_cli)), use_cli = FALSE)
+    }
+  } else {
+    funinfo <- fmt_align(list(names(imports), fmt_srcref(srcref, use_cli)), use_cli = use_cli)
   }
   funsplit <- split(names(imports), f = imports)
-  funinfo <- fmt_align(list(names(imports), fmt_srcref(srcref, use_cli)), use_cli = use_cli)
   if(use_cli) {
     mw <- max(cli::ansi_nchar(names(funsplit), "width"))
     pkginfo <- fmt_align(list(cli::style_bold(names(funsplit)), fmt_count(funsplit, srcref, use_cli = use_cli)), mw + 2, use_cli)
