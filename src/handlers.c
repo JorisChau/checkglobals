@@ -199,14 +199,14 @@ void inline_fun(SEXP call, SEXP enclos, R_args *args)
             Rf_defineVar(TAG(funargs), R_NilValue, enclos);
             funargs = CDR(funargs);
         }
-        Rf_defineVar(Rf_install(".__closure__"), PROTECT(Rf_ScalarLogical(TRUE)), enclos);
+    }
+    Rf_defineVar(Rf_install(".__closure__"), PROTECT(Rf_ScalarLogical(TRUE)), enclos);
+    UNPROTECT(1);
+    if (args->skip_closure)
+    {
+        Rf_defineVar(Rf_install(".__closure__"), PROTECT(Rf_ScalarLogical(FALSE)), enclos);
         UNPROTECT(1);
-        if (args->skip_closure)
-        {
-            Rf_defineVar(Rf_install(".__closure__"), PROTECT(Rf_ScalarLogical(FALSE)), enclos);
-            UNPROTECT(1);
-            args->skip_closure = FALSE;
-        }
+        args->skip_closure = FALSE;
     }
 }
 
@@ -221,6 +221,48 @@ void local_expr(SEXP enclos)
 {
     Rf_defineVar(Rf_install(".__closure__"), PROTECT(Rf_ScalarLogical(TRUE)), enclos);
     UNPROTECT(1);
+}
+
+/*----------------------------------------------------------------------
+
+  exit_expr
+
+  Handle `on.exit` calls by replacing expression for evaluation
+  as final call in enclosing environment
+
+*/
+void exit_expr(SEXP call, SEXP enclos, R_args *args)
+{
+    if ((args->pending_exit)[0] == 0)
+    {
+        SEXP parent_env = enclos;
+        int parent_lvl = 0;
+        SEXP closure = NULL;
+        PROTECT_INDEX ipx = 0;
+        PROTECT_WITH_INDEX(closure = Rf_findVarInFrame(parent_env, Rf_install(".__closure__")), &ipx);
+        Rboolean isclosure = (closure != R_UnboundValue) ? LOGICAL_ELT(closure, 0) : FALSE;
+        while (!isclosure)
+        {
+            parent_env = ENCLOS(parent_env);
+            REPROTECT(closure = Rf_findVarInFrame(parent_env, Rf_install(".__closure__")), ipx);
+            isclosure = (closure != R_UnboundValue) ? LOGICAL_ELT(closure, 0) : FALSE;
+            parent_lvl -= 1;
+        }
+        if (args->verbose)
+            Rprintf("SPECIAL SYMBOL: on.exit\n");
+        SEXP expr = PROTECT(CADR(call));
+        Rf_defineVar(Rf_install("on.exit"), PROTECT(Rf_duplicate(expr)), parent_env);
+        SETCADR(call, Rf_install("on.exit")); // placeholder term
+        (args->pending_exit)[0] = 1;
+        (args->pending_exit)[1] = parent_lvl;
+        (args->pending_exit)[2] = 0;
+        UNPROTECT(3);
+    }
+    else if (args->verbose)
+    {
+        // TODO: find example where this is reached
+        Rprintf("ERROR: multiple and/or nested on.exit calls in single closure\n");
+    }
 }
 
 /*----------------------------------------------------------------------

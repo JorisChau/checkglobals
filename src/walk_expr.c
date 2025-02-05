@@ -117,6 +117,10 @@ static void assign_global(SEXP sym, const char *opchar, SEXP enclos, R_len_t i, 
 static void walk(SEXP call, SEXP enclos, SEXP env0, SEXP envi, SEXP envg, SEXP rho, SEXP srcrefi, SEXP srcrefg, R_args *args)
 {
     SEXPTYPE type = TYPEOF(call);
+    // increase level
+    if ((args->pending_exit)[0])
+        (args->pending_exit)[2] += 1;
+ 
     if (type == VECSXP || type == EXPRSXP || type == LISTSXP)
     {
         SEXP calli = NULL, enclosi = NULL;
@@ -191,41 +195,76 @@ static void walk(SEXP call, SEXP enclos, SEXP env0, SEXP envi, SEXP envg, SEXP r
         // 12) extra reserved names R6Class
         if (strcmp(opchar, "R6Class") == 0)
             add_reserved_R6(enclos);
+        // 13) on.exit call 
+        if (strcmp(opchar, "on.exit") == 0)
+            exit_expr(call, enclos, args);
         // unprotect operator
         UNPROTECT(1);
-        // 13) find globals
+        // 14) find globals
         is_skip = strmatch(opchar, skip_nms, 7);
         if (is_skip > -1 && args->skip[is_skip] < 1)
         {
-                if (args->verbose)
-                    Rprintf("Note: skipping globals in calls to '%s'\n", opchar);
-                (args->skip)[is_skip] = 1;
+            if (args->verbose)
+                Rprintf("Note: skipping globals in calls to '%s'\n", opchar);
+            (args->skip)[is_skip] = 1;
         }
         if (is_skip == -1)
         {
-                SEXP calli = NULL, enclosi = NULL;
-                R_len_t n = Rf_length(call);
-                for (R_len_t i = 0; i < n; i++)
+            SEXP calli = NULL, enclosi = NULL;
+            R_len_t n = Rf_length(call);
+            for (R_len_t i = 0; i < n; i++)
+            {
+                calli = CAR(call);
+                if (Rf_isSymbol(calli))
                 {
-                    calli = CAR(call);
-                    if (Rf_isSymbol(calli))
+                    if (strcmp(opchar, "::") != 0 && strcmp(opchar, ":::") != 0 && ((strcmp(opchar, "@") != 0 && strcmp(opchar, "$") != 0) || i == 1))
                     {
-                        if (strcmp(opchar, "::") != 0 && strcmp(opchar, ":::") != 0 && ((strcmp(opchar, "@") != 0 && strcmp(opchar, "$") != 0) || i == 1))
-                        {
-                            assign_global(calli, opchar, enclos, i, n, envg, srcrefg);
-                        }
+                        assign_global(calli, opchar, enclos, i, n, envg, srcrefg);
                     }
-                    else if (Rf_isPairList(calli) && !Rf_isNull(calli))
-                    {
-                        enclosi = PROTECT(init_enclos(calli, enclos, i, n, type));
-                        args->parent_opchar = opchar;
-                        walk(calli, enclosi, env0, envi, envg, rho, srcrefi, srcrefg, args);
-                        UNPROTECT(1);
-                    }
-                    call = CDR(call);
                 }
+                else if (Rf_isPairList(calli) && !Rf_isNull(calli))
+                {
+
+                    enclosi = PROTECT(init_enclos(calli, enclos, i, n, type));
+                    args->parent_opchar = opchar;
+                    walk(calli, enclosi, env0, envi, envg, rho, srcrefi, srcrefg, args);
+                    UNPROTECT(1);
+                }
+                if (i < (n - 1))
+                    call = CDR(call);
+            }
+            // replace lazy symbol
+            if (Rf_isSymbol(calli) && ENCLOS(enclos) != env0)
+            {
+                SEXP fun = PROTECT(find_var_in_closure(calli, enclos));
+                if (fun != R_UnboundValue && !Rf_isNull(fun) && Rf_isPairList(fun))
+                {
+                    SEXP sym = CAR(fun);
+                    if (Rf_isSymbol(sym) && strcmp(CHAR(PRINTNAME(sym)), "function") == 0)
+                    {
+                        Rf_setVar(calli, R_NilValue, enclos);
+                        walk(fun, enclos, env0, envi, envg, rho, srcrefi, srcrefg, args);
+                    }
+                }
+                UNPROTECT(1);
+            }
+            // evaluate on.exit expression
+            if ((args->pending_exit)[0] && (args->pending_exit)[1] == (args->pending_exit)[2])
+            {
+                SEXP exit = PROTECT(Rf_findVarInFrame(enclos, Rf_install("on.exit")));
+                if(exit != R_UnboundValue && !Rf_isNull(exit))
+                {
+                    (args->pending_exit)[0] = 0;
+                    Rf_setVar(Rf_install("on.exit"), R_NilValue, enclos);
+                    walk(exit, enclos, env0, envi, envg, rho, srcrefi, srcrefg, args);
+                }
+                UNPROTECT(1);
+            }
         }
     }
+    // decrease level
+    if ((args->pending_exit)[0])
+        (args->pending_exit)[2] -= 1;
 }
 
 SEXP walk_expr(SEXP expr, SEXP env0, SEXP envi, SEXP envg, SEXP rho, SEXP srcrefi, SEXP srcrefg,
@@ -238,7 +277,9 @@ SEXP walk_expr(SEXP expr, SEXP env0, SEXP envi, SEXP envg, SEXP rho, SEXP srcref
         .compiled = LOGICAL_ELT(R_include_compiled, 0),
         .verbose = LOGICAL_ELT(R_verbose, 0),
         .skip_closure = FALSE,
-        .parent_opchar = ""};
+        .parent_opchar = "",
+        .pending_exit = {0, 0, 0},
+        .pending_lazyenv = 0};
     // recurse
     walk(expr, env0, env0, envi, envg, rho, srcrefi, srcrefg, &args);
     // no return value

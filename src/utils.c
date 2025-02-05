@@ -491,3 +491,28 @@ SEXP matcharg_bynamepos(SEXP op, SEXP call, SEXP rho, const char **formals, cons
     UNPROTECT(nprotect);
     return R_NilValue;
 }
+
+/*
+    find_var_in_closure
+    
+    Find a variable in the enclosing closure environment of env,
+    i.e. the enclosing environment where .__closure__ is TRUE. 
+    Returns R_UnboundValue if the variable is undefined.
+
+*/
+SEXP find_var_in_closure(SEXP var, SEXP env)
+{
+    SEXP parent_env = env;
+    SEXP closure = NULL;
+    PROTECT_INDEX ipx = 0;
+    PROTECT_WITH_INDEX(closure = Rf_findVarInFrame(parent_env, Rf_install(".__closure__")), &ipx);
+    Rboolean isclosure = (closure != R_UnboundValue) ? LOGICAL_ELT(closure, 0) : FALSE;
+    while (!isclosure)
+    {
+        parent_env = ENCLOS(parent_env);
+        REPROTECT(closure = Rf_findVarInFrame(parent_env, Rf_install(".__closure__")), ipx);
+        isclosure = (closure != R_UnboundValue) ? LOGICAL_ELT(closure, 0) : FALSE;
+    }
+    UNPROTECT(1);
+    return Rf_findVarInFrame(parent_env, var);
+}
