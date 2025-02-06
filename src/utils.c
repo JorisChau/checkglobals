@@ -45,6 +45,16 @@ const char *formals_parallel[7][12] = {
     // pvec
     {"v", "FUN", "...", "mc.set.seed", "mc.silent", "mc.cores", "mc.cleanup", NULL, NULL, NULL, NULL, NULL}};
 
+#ifdef R_BELOW_4_5
+SEXP R_getVarEx(SEXP sym, SEXP rho, Rboolean inherits, SEXP ifnotfound)
+{
+    SEXP val = inherits ? Rf_findVar(sym, rho) : Rf_findVarInFrame(rho, sym);
+    if (val == R_UnboundValue)
+        return ifnotfound;
+    return val;
+}
+#endif
+
 /* set bit in array */
 static void setbit(R_len_t *array, R_len_t el)
 {
@@ -65,7 +75,7 @@ static SEXP matcharg_rho(SEXP op, SEXP call, SEXP actuals, SEXP rho, int argpos)
 
     if (fun != R_UnboundValue && !Rf_isPrimitive(fun))
     {
-        SEXP formals = FORMALS(fun);
+        SEXP formals = R_ClosureFormals(fun);
         int narg = 0;
         int dots = -1;
         while (!Rf_isNull(formals))
@@ -92,7 +102,7 @@ static SEXP matcharg_rho(SEXP op, SEXP call, SEXP actuals, SEXP rho, int argpos)
             if (LENGTH(actualj))
             {
                 tag = CHAR(actualj);
-                formals = FORMALS(fun);
+                formals = R_ClosureFormals(fun);
                 match = -1;
                 i = 0;
                 while (!Rf_isNull(formals))
@@ -295,7 +305,7 @@ SEXP matcharg_bypos(SEXP op, SEXP call, SEXP rho, int argpos)
     if (fun != R_UnboundValue && !Rf_isPrimitive(fun))
     {
         // get tag at position p
-        SEXP formals = FORMALS(fun);
+        SEXP formals = R_ClosureFormals(fun);
         int i = 0;
         while (i < argpos)
         {
@@ -339,7 +349,7 @@ SEXP matcharg_bypos(SEXP op, SEXP call, SEXP rho, int argpos)
             {
                 int narg = 0;
                 int dots = -1;
-                formals = FORMALS(fun);
+                formals = R_ClosureFormals(fun);
                 while (!Rf_isNull(formals))
                 {
                     if (!strcmp(CHAR(PRINTNAME(TAG(formals))), "..."))
@@ -361,7 +371,7 @@ SEXP matcharg_bypos(SEXP op, SEXP call, SEXP rho, int argpos)
                     if (LENGTH(actualj))
                     {
                         tag = CHAR(actualj);
-                        formals = FORMALS(fun);
+                        formals = R_ClosureFormals(fun);
                         match = -1;
                         i = 0;
                         while (!Rf_isNull(formals))
@@ -505,14 +515,14 @@ SEXP find_var_in_closure(SEXP var, SEXP env)
     SEXP parent_env = env;
     SEXP closure = NULL;
     PROTECT_INDEX ipx = 0;
-    PROTECT_WITH_INDEX(closure = Rf_findVarInFrame(parent_env, Rf_install(".__closure__")), &ipx);
+    PROTECT_WITH_INDEX(closure = R_getVarEx(Rf_install(".__closure__"), parent_env, FALSE, R_UnboundValue), &ipx);
     Rboolean isclosure = (closure != R_UnboundValue) ? LOGICAL_ELT(closure, 0) : FALSE;
     while (!isclosure)
     {
-        parent_env = ENCLOS(parent_env);
-        REPROTECT(closure = Rf_findVarInFrame(parent_env, Rf_install(".__closure__")), ipx);
+        parent_env = R_ParentEnv(parent_env);
+        REPROTECT(closure = R_getVarEx(Rf_install(".__closure__"), parent_env, FALSE, R_UnboundValue), ipx);
         isclosure = (closure != R_UnboundValue) ? LOGICAL_ELT(closure, 0) : FALSE;
     }
     UNPROTECT(1);
-    return Rf_findVarInFrame(parent_env, var);
+    return R_getVarEx(var, parent_env, FALSE, R_UnboundValue);
 }

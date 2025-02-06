@@ -33,7 +33,7 @@ static SEXP init_enclos(SEXP call, SEXP enclos, R_len_t i, R_len_t n, SEXPTYPE t
     }
     else
     {
-        REPROTECT(srcref = Rf_findVarInFrame(enclos, Rf_install(".__srcref__")), ipx);
+        REPROTECT(srcref = R_getVarEx(Rf_install(".__srcref__"), enclos, FALSE, R_UnboundValue), ipx);
         if (srcref != R_UnboundValue && TYPEOF(srcref) == VECSXP && Rf_length(srcref) == n)
             Rf_defineVar(Rf_install(".__srcref__"), VECTOR_ELT(srcref, i), enclos1);
     }
@@ -52,7 +52,7 @@ static SEXP init_enclos(SEXP call, SEXP enclos, R_len_t i, R_len_t n, SEXPTYPE t
 */
 static Rboolean is_reserved(SEXP sym, SEXP enclos)
 {
-    SEXP dots = PROTECT(Rf_findVar(Rf_install("..."), enclos));
+    SEXP dots = PROTECT(R_getVarEx(Rf_install("..."), enclos, TRUE, R_UnboundValue));
     Rboolean reserved = FALSE;
     if (dots != R_UnboundValue && ddval(sym) > 0)
         reserved = TRUE;
@@ -70,11 +70,11 @@ static Rboolean is_reserved(SEXP sym, SEXP enclos)
 */
 static void assign_global(SEXP sym, const char *opchar, SEXP enclos, R_len_t i, R_len_t n, SEXP envg, SEXP srcrefg)
 {
-    SEXP nm = PROTECT(Rf_findVar(sym, enclos));
+    SEXP nm = PROTECT(R_getVarEx(sym, enclos, TRUE, R_UnboundValue));
     if (nm == R_UnboundValue && !is_reserved(sym, enclos))
     {
         Rf_defineVar(sym, PROTECT(Rf_mkString(!strcmp(CHAR(PRINTNAME(sym)), opchar) ? "function" : "variable")), envg);
-        SEXP srcsym = PROTECT(Rf_findVarInFrame(srcrefg, sym));
+        SEXP srcsym = PROTECT(R_getVarEx(sym, srcrefg, FALSE, R_UnboundValue));
         SEXP srcsym1 = NULL;
         if (srcsym != R_UnboundValue)
         {
@@ -92,7 +92,7 @@ static void assign_global(SEXP sym, const char *opchar, SEXP enclos, R_len_t i, 
         }
         else
             srcsym1 = PROTECT(Rf_allocVector(VECSXP, 1));
-        SEXP nmsrc = PROTECT(Rf_findVar(Rf_install(".__srcref__"), enclos));
+        SEXP nmsrc = PROTECT(R_getVarEx(Rf_install(".__srcref__"), enclos, TRUE, R_UnboundValue));
         if (nmsrc != R_UnboundValue && TYPEOF(nmsrc) == VECSXP && Rf_length(nmsrc) == n)
         {
             SET_VECTOR_ELT(srcsym1, Rf_length(srcsym1) - 1, PROTECT(VECTOR_ELT(nmsrc, i)));
@@ -163,13 +163,13 @@ static void walk(SEXP call, SEXP enclos, SEXP env0, SEXP envi, SEXP envg, SEXP r
         op = PROTECT(operator(call, rho));
         opchar = CHAR(PRINTNAME(op));
         // 2) global variables
-        if (args->is_pkg && ENCLOS(enclos) == env0 && strcmp(opchar, "globalVariables") == 0)
+        if (args->is_pkg && R_ParentEnv(enclos) == env0 && strcmp(opchar, "globalVariables") == 0)
             global_vars(call, rho, enclos, env0, args->verbose);
         // 3) import namespaces
         if (strcmp(opchar, "library") == 0 || strcmp(opchar, "require") == 0 || strcmp(opchar, "requireNamespace") == 0 || strcmp(opchar, "attachNamespace") == 0)
             import_ns(op, opchar, call, rho, envi, enclos, args->verbose);
         // 4) special functions
-        if (args->is_pkg && ENCLOS(enclos) == env0 && strmatch(opchar, assign_nms, 9) > -1)
+        if (args->is_pkg && R_ParentEnv(enclos) == env0 && strmatch(opchar, assign_nms, 9) > -1)
             special_funs(op, opchar, call, rho, env0, args);
         // 5) inline function calls
         fun_call(op, call, enclos);
@@ -234,7 +234,7 @@ static void walk(SEXP call, SEXP enclos, SEXP env0, SEXP envi, SEXP envg, SEXP r
                     call = CDR(call);
             }
             // replace lazy symbol
-            if (Rf_isSymbol(calli) && ENCLOS(enclos) != env0)
+            if (Rf_isSymbol(calli) && R_ParentEnv(enclos) != env0)
             {
                 SEXP fun = PROTECT(find_var_in_closure(calli, enclos));
                 if (fun != R_UnboundValue && !Rf_isNull(fun) && Rf_isPairList(fun))
@@ -251,7 +251,7 @@ static void walk(SEXP call, SEXP enclos, SEXP env0, SEXP envi, SEXP envg, SEXP r
             // evaluate on.exit expression
             if ((args->pending_exit)[0] && (args->pending_exit)[1] == (args->pending_exit)[2])
             {
-                SEXP exit = PROTECT(Rf_findVarInFrame(enclos, Rf_install("on.exit")));
+                SEXP exit = PROTECT(R_getVarEx(Rf_install("on.exit"), enclos, FALSE, R_UnboundValue));
                 if(exit != R_UnboundValue && !Rf_isNull(exit))
                 {
                     (args->pending_exit)[0] = 0;
@@ -278,8 +278,7 @@ SEXP walk_expr(SEXP expr, SEXP env0, SEXP envi, SEXP envg, SEXP rho, SEXP srcref
         .verbose = LOGICAL_ELT(R_verbose, 0),
         .skip_closure = FALSE,
         .parent_opchar = "",
-        .pending_exit = {0, 0, 0},
-        .pending_lazyenv = 0};
+        .pending_exit = {0, 0, 0}};
     // recurse
     walk(expr, env0, env0, envi, envg, rho, srcrefi, srcrefg, &args);
     // no return value

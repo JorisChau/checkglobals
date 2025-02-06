@@ -3,8 +3,16 @@
 
 #include <R.h>
 #include <Rinternals.h>
+#include <Rversion.h>
 #include <string.h>
 #include <stdio.h>
+
+#if R_VERSION < R_Version(4, 5, 0)
+#define R_BELOW_4_5
+#define R_ClosureFormals(x) FORMALS(x)
+#define R_ParentEnv(x) ENCLOS(x)
+SEXP R_getVarEx(SEXP sym, SEXP rho, Rboolean inherits, SEXP ifnotfound);
+#endif
 
 // constants
 extern const char *functionals[33];
@@ -24,8 +32,7 @@ typedef struct R_args
     Rboolean verbose;
     Rboolean skip_closure;
     const char *parent_opchar;
-    int pending_exit[3];  
-    int pending_lazyenv;
+    int pending_exit[3];
 } R_args;
 
 // helpers

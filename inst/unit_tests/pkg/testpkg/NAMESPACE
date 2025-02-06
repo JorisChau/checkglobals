@@ -1,5 +1,5 @@
 import(stats)
-import(utils)
+import(utils, except = maintainer)
 import(checkglobals)
 importFrom(methods, setGeneric, setMethod, getMethod)
 importFrom(parallel, pvec)

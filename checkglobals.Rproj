@@ -1,4 +1,5 @@
 Version: 1.0
+ProjectId: ae502330-1d09-4a0b-993f-84108ae648d9
 
 RestoreWorkspace: Default
 SaveWorkspace: Default
@@ -18,3 +19,4 @@ StripTrailingWhitespace: Yes
 BuildType: Package
 PackageUseDevtools: Yes
 PackageInstallArgs: --no-multiarch --with-keep.source
+PackageCheckArgs: --use-gct
