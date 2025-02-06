@@ -39,8 +39,7 @@
 #' ## from bundled R-package
 #' \donttest{
 #'   check_pkg(
-#'     pkg = "https://cran.r-project.org/src/contrib/tinytest_1.4.1.tar.gz",
-#'     skip_globals = "cluster"
+#'     pkg = "https://cran.r-project.org/src/contrib/tinytest_1.4.1.tar.gz"
 #'   )
 #' }
 #' @export

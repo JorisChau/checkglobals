@@ -33,7 +33,7 @@ static SEXP init_enclos(SEXP call, SEXP enclos, R_len_t i, R_len_t n, SEXPTYPE t
     }
     else
     {
-        REPROTECT(srcref = R_getVarEx(Rf_install(".__srcref__"), enclos, FALSE, R_UnboundValue), ipx);
+        REPROTECT(srcref = R_getVarEx1(Rf_install(".__srcref__"), enclos, FALSE), ipx);
         if (srcref != R_UnboundValue && TYPEOF(srcref) == VECSXP && Rf_length(srcref) == n)
             Rf_defineVar(Rf_install(".__srcref__"), VECTOR_ELT(srcref, i), enclos1);
     }
@@ -52,7 +52,7 @@ static SEXP init_enclos(SEXP call, SEXP enclos, R_len_t i, R_len_t n, SEXPTYPE t
 */
 static Rboolean is_reserved(SEXP sym, SEXP enclos)
 {
-    SEXP dots = PROTECT(R_getVarEx(Rf_install("..."), enclos, TRUE, R_UnboundValue));
+    SEXP dots = PROTECT(R_getVarEx1(Rf_install("..."), enclos, TRUE));
     Rboolean reserved = FALSE;
     if (dots != R_UnboundValue && ddval(sym) > 0)
         reserved = TRUE;
@@ -70,40 +70,43 @@ static Rboolean is_reserved(SEXP sym, SEXP enclos)
 */
 static void assign_global(SEXP sym, const char *opchar, SEXP enclos, R_len_t i, R_len_t n, SEXP envg, SEXP srcrefg)
 {
-    SEXP nm = PROTECT(R_getVarEx(sym, enclos, TRUE, R_UnboundValue));
-    if (nm == R_UnboundValue && !is_reserved(sym, enclos))
+    if (sym != R_MissingArg && strcmp(opchar, "::") != 0 && strcmp(opchar, ":::") != 0 && ((strcmp(opchar, "@") != 0 && strcmp(opchar, "$") != 0) || i == 1))
     {
-        Rf_defineVar(sym, PROTECT(Rf_mkString(!strcmp(CHAR(PRINTNAME(sym)), opchar) ? "function" : "variable")), envg);
-        SEXP srcsym = PROTECT(R_getVarEx(sym, srcrefg, FALSE, R_UnboundValue));
-        SEXP srcsym1 = NULL;
-        if (srcsym != R_UnboundValue)
+        SEXP nm = PROTECT(R_getVarEx1(sym, enclos, TRUE));
+        if (nm == R_UnboundValue && !is_reserved(sym, enclos))
         {
-            srcsym1 = PROTECT(Rf_allocVector(VECSXP, Rf_length(srcsym) + 1));
-            PROTECT_INDEX ipx = 0;
-            SEXP srcsymj = NULL;
-            PROTECT_WITH_INDEX(srcsymj = VECTOR_ELT(srcsym, 0), &ipx);
-            SET_VECTOR_ELT(srcsym1, 0, srcsymj);
-            for (int j = 1; j < Rf_length(srcsym); j++)
+            Rf_defineVar(sym, PROTECT(Rf_mkString(!strcmp(CHAR(PRINTNAME(sym)), opchar) ? "function" : "variable")), envg);
+            SEXP srcsym = PROTECT(R_getVarEx1(sym, srcrefg, FALSE));
+            SEXP srcsym1 = NULL;
+            if (srcsym != R_UnboundValue)
             {
-                REPROTECT(srcsymj = VECTOR_ELT(srcsym, j), ipx);
-                SET_VECTOR_ELT(srcsym1, j, srcsymj);
+                srcsym1 = PROTECT(Rf_allocVector(VECSXP, Rf_length(srcsym) + 1));
+                PROTECT_INDEX ipx = 0;
+                SEXP srcsymj = NULL;
+                PROTECT_WITH_INDEX(srcsymj = VECTOR_ELT(srcsym, 0), &ipx);
+                SET_VECTOR_ELT(srcsym1, 0, srcsymj);
+                for (int j = 1; j < Rf_length(srcsym); j++)
+                {
+                    REPROTECT(srcsymj = VECTOR_ELT(srcsym, j), ipx);
+                    SET_VECTOR_ELT(srcsym1, j, srcsymj);
+                }
+                UNPROTECT(1);
             }
-            UNPROTECT(1);
+            else
+                srcsym1 = PROTECT(Rf_allocVector(VECSXP, 1));
+            SEXP nmsrc = PROTECT(R_getVarEx1(Rf_install(".__srcref__"), enclos, TRUE));
+            if (nmsrc != R_UnboundValue && TYPEOF(nmsrc) == VECSXP && Rf_length(nmsrc) == n)
+            {
+                SET_VECTOR_ELT(srcsym1, Rf_length(srcsym1) - 1, PROTECT(VECTOR_ELT(nmsrc, i)));
+                UNPROTECT(1);
+            }
+            else if (nmsrc != R_UnboundValue)
+                SET_VECTOR_ELT(srcsym1, Rf_length(srcsym1) - 1, nmsrc);
+            Rf_defineVar(sym, srcsym1, srcrefg);
+            UNPROTECT(4);
         }
-        else
-            srcsym1 = PROTECT(Rf_allocVector(VECSXP, 1));
-        SEXP nmsrc = PROTECT(R_getVarEx(Rf_install(".__srcref__"), enclos, TRUE, R_UnboundValue));
-        if (nmsrc != R_UnboundValue && TYPEOF(nmsrc) == VECSXP && Rf_length(nmsrc) == n)
-        {
-            SET_VECTOR_ELT(srcsym1, Rf_length(srcsym1) - 1, PROTECT(VECTOR_ELT(nmsrc, i)));
-            UNPROTECT(1);
-        }
-        else if (nmsrc != R_UnboundValue)
-            SET_VECTOR_ELT(srcsym1, Rf_length(srcsym1) - 1, nmsrc);
-        Rf_defineVar(sym, srcsym1, srcrefg);
-        UNPROTECT(4);
+        UNPROTECT(1);
     }
-    UNPROTECT(1);
 }
 
 /*----------------------------------------------------------------------
@@ -120,7 +123,7 @@ static void walk(SEXP call, SEXP enclos, SEXP env0, SEXP envi, SEXP envg, SEXP r
     // increase level
     if ((args->pending_exit)[0])
         (args->pending_exit)[2] += 1;
- 
+
     if (type == VECSXP || type == EXPRSXP || type == LISTSXP)
     {
         SEXP calli = NULL, enclosi = NULL;
@@ -195,7 +198,7 @@ static void walk(SEXP call, SEXP enclos, SEXP env0, SEXP envi, SEXP envg, SEXP r
         // 12) extra reserved names R6Class
         if (strcmp(opchar, "R6Class") == 0)
             add_reserved_R6(enclos);
-        // 13) on.exit call 
+        // 13) on.exit call
         if (strcmp(opchar, "on.exit") == 0)
             exit_expr(call, enclos, args);
         // unprotect operator
@@ -217,14 +220,10 @@ static void walk(SEXP call, SEXP enclos, SEXP env0, SEXP envi, SEXP envg, SEXP r
                 calli = CAR(call);
                 if (Rf_isSymbol(calli))
                 {
-                    if (strcmp(opchar, "::") != 0 && strcmp(opchar, ":::") != 0 && ((strcmp(opchar, "@") != 0 && strcmp(opchar, "$") != 0) || i == 1))
-                    {
-                        assign_global(calli, opchar, enclos, i, n, envg, srcrefg);
-                    }
+                    assign_global(calli, opchar, enclos, i, n, envg, srcrefg);
                 }
                 else if (Rf_isPairList(calli) && !Rf_isNull(calli))
                 {
-
                     enclosi = PROTECT(init_enclos(calli, enclos, i, n, type));
                     args->parent_opchar = opchar;
                     walk(calli, enclosi, env0, envi, envg, rho, srcrefi, srcrefg, args);
@@ -251,8 +250,8 @@ static void walk(SEXP call, SEXP enclos, SEXP env0, SEXP envi, SEXP envg, SEXP r
             // evaluate on.exit expression
             if ((args->pending_exit)[0] && (args->pending_exit)[1] == (args->pending_exit)[2])
             {
-                SEXP exit = PROTECT(R_getVarEx(Rf_install("on.exit"), enclos, FALSE, R_UnboundValue));
-                if(exit != R_UnboundValue && !Rf_isNull(exit))
+                SEXP exit = PROTECT(R_getVarEx1(Rf_install("on.exit"), enclos, FALSE));
+                if (exit != R_UnboundValue && !Rf_isNull(exit))
                 {
                     (args->pending_exit)[0] = 0;
                     Rf_setVar(Rf_install("on.exit"), R_NilValue, enclos);

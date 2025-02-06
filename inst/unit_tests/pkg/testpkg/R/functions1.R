@@ -168,3 +168,7 @@ f21 <- function(y) {
   on.exit(rm(x1))
   invisible(x1 <- y)
 }
+
+f22 <- function(y) {
+    y[order(y$el1, y$el2), ]
+}

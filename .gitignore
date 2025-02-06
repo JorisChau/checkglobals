@@ -20,3 +20,4 @@ README.Rmd
 /Meta/
 .vscode
 checkglobals.Rproj
+/docker/

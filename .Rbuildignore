@@ -1,4 +1,6 @@
 ^.*\.Rproj$
+^.*\.Rcheck$
+^.*\.tar\.gz$
 ^\.Rproj\.user$
 ^.vscode$
 ^README$
@@ -10,3 +12,4 @@
 ^CRAN-RELEASE$
 ^CRAN-SUBMISSION$
 ^Makefile$
+^docker$

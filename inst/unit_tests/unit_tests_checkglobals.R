@@ -56,7 +56,7 @@ dotest("2.1", check2.1, c("SYMBOL: f1", "SYMBOL_FORMALS: y", "SYMBOL: ff1", "SYM
                           "SYMBOL_FORMALS: ...", "SYMBOL: f19", "SYMBOL_FORMALS: y", "SYMBOL: .onLoad",
                           "SYMBOL: f20", "SYMBOL_FORMALS: y", "SYMBOL: ff20", "SYMBOL: x",
                           "PKG_SYMBOL: stats, sd", "SYMBOL: f21", "SYMBOL_FORMALS: y",
-                          "SPECIAL SYMBOL: on.exit", "SYMBOL: x1"))
+                          "SPECIAL SYMBOL: on.exit", "SYMBOL: x1", "SYMBOL: f22", "SYMBOL_FORMALS: y"))
 
 rexpr <- parse(file = system.file("unit_tests", "pkg", "testpkg", "R", "aaa.R", package = "checkglobals"), keep.source = TRUE)
 check2.2 <- capture.output(invisible(checkglobals:::.check_internal(rexpr, is_pkg = TRUE, verbose = TRUE)))

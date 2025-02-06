@@ -46,12 +46,20 @@ const char *formals_parallel[7][12] = {
     {"v", "FUN", "...", "mc.set.seed", "mc.silent", "mc.cores", "mc.cleanup", NULL, NULL, NULL, NULL, NULL}};
 
 #ifdef R_BELOW_4_5
-SEXP R_getVarEx(SEXP sym, SEXP rho, Rboolean inherits, SEXP ifnotfound)
+SEXP R_getVarEx1(SEXP sym, SEXP rho, Rboolean inherits)
 {
+    if(sym == R_MissingArg)
+        return R_UnboundValue;
     SEXP val = inherits ? Rf_findVar(sym, rho) : Rf_findVarInFrame(rho, sym);
-    if (val == R_UnboundValue)
-        return ifnotfound;
     return val;
+}
+#else
+SEXP R_getVarEx1(SEXP sym, SEXP rho, Rboolean inherits)
+{
+    if(sym == R_MissingArg)
+        return R_UnboundValue;
+    else
+        return R_getVarEx(sym, rho, inherits, R_UnboundValue);
 }
 #endif
 
@@ -515,14 +523,14 @@ SEXP find_var_in_closure(SEXP var, SEXP env)
     SEXP parent_env = env;
     SEXP closure = NULL;
     PROTECT_INDEX ipx = 0;
-    PROTECT_WITH_INDEX(closure = R_getVarEx(Rf_install(".__closure__"), parent_env, FALSE, R_UnboundValue), &ipx);
+    PROTECT_WITH_INDEX(closure = R_getVarEx1(Rf_install(".__closure__"), parent_env, FALSE), &ipx);
     Rboolean isclosure = (closure != R_UnboundValue) ? LOGICAL_ELT(closure, 0) : FALSE;
     while (!isclosure)
     {
         parent_env = R_ParentEnv(parent_env);
-        REPROTECT(closure = R_getVarEx(Rf_install(".__closure__"), parent_env, FALSE, R_UnboundValue), ipx);
+        REPROTECT(closure = R_getVarEx1(Rf_install(".__closure__"), parent_env, FALSE), ipx);
         isclosure = (closure != R_UnboundValue) ? LOGICAL_ELT(closure, 0) : FALSE;
     }
     UNPROTECT(1);
-    return R_getVarEx(var, parent_env, FALSE, R_UnboundValue);
+    return R_getVarEx1(var, parent_env, FALSE);
 }

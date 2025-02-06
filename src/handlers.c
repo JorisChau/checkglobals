@@ -168,7 +168,7 @@ void import_ns(SEXP op, const char *opchar, SEXP call, SEXP rho, SEXP envi, SEXP
     {
         if (verbose)
             Rprintf("PKG_LOAD: %s\n", CHAR(STRING_ELT(pkgstr, 0)));
-        SEXP pkgs = PROTECT(R_getVarEx(Rf_install(".__pkgs__"), envi, TRUE, R_UnboundValue));
+        SEXP pkgs = PROTECT(R_getVarEx1(Rf_install(".__pkgs__"), envi, TRUE));
         SEXP pkgs1 = PROTECT(Rf_allocVector(STRSXP, Rf_length(pkgs) + 1));
         if (Rf_length(pkgs) > 0)
             for (int j = 0; j < Rf_length(pkgs); j++)
@@ -242,12 +242,12 @@ void exit_expr(SEXP call, SEXP enclos, R_args *args)
         int parent_lvl = 0;
         SEXP closure = NULL;
         PROTECT_INDEX ipx = 0;
-        PROTECT_WITH_INDEX(closure = R_getVarEx(Rf_install(".__closure__"), parent_env, FALSE, R_UnboundValue), &ipx);
+        PROTECT_WITH_INDEX(closure = R_getVarEx1(Rf_install(".__closure__"), parent_env, FALSE), &ipx);
         Rboolean isclosure = (closure != R_UnboundValue) ? LOGICAL_ELT(closure, 0) : FALSE;
         while (!isclosure)
         {
             parent_env = R_ParentEnv(parent_env);
-            REPROTECT(closure = R_getVarEx(Rf_install(".__closure__"), parent_env, FALSE, R_UnboundValue), ipx);
+            REPROTECT(closure = R_getVarEx1(Rf_install(".__closure__"), parent_env, FALSE), ipx);
             isclosure = (closure != R_UnboundValue) ? LOGICAL_ELT(closure, 0) : FALSE;
             parent_lvl -= 1;
         }
@@ -278,8 +278,8 @@ void exit_expr(SEXP call, SEXP enclos, R_args *args)
 */
 void fun_call(SEXP op, SEXP call, SEXP enclos)
 {
-    SEXP fun = PROTECT(R_getVarEx(op, enclos, TRUE, R_UnboundValue));
-    SEXP funbase = PROTECT(R_getVarEx(op, R_BaseEnv, TRUE, R_UnboundValue));
+    SEXP fun = PROTECT(R_getVarEx1(op, enclos, TRUE));
+    SEXP funbase = PROTECT(R_getVarEx1(op, R_BaseEnv, TRUE));
 
     if (fun != R_UnboundValue && funbase == R_UnboundValue && !Rf_isNull(fun) && Rf_isPairList(fun))
     {
@@ -345,25 +345,25 @@ void local_assign(SEXP op, const char *opchar, SEXP call, SEXP rho, SEXP env0, S
         SEXP parent_env = enclos;
         SEXP closure = NULL;
         PROTECT_INDEX ipx1 = 0;
-        PROTECT_WITH_INDEX(closure = R_getVarEx(Rf_install(".__closure__"), parent_env, FALSE, R_UnboundValue), &ipx1);
+        PROTECT_WITH_INDEX(closure = R_getVarEx1(Rf_install(".__closure__"), parent_env, FALSE), &ipx1);
         nprotect++;
         Rboolean isclosure = (closure != R_UnboundValue) ? LOGICAL_ELT(closure, 0) : FALSE;
         while (!isclosure)
         {
             parent_env = R_ParentEnv(parent_env);
-            REPROTECT(closure = R_getVarEx(Rf_install(".__closure__"), parent_env, FALSE, R_UnboundValue), ipx1);
+            REPROTECT(closure = R_getVarEx1(Rf_install(".__closure__"), parent_env, FALSE), ipx1);
             isclosure = (closure != R_UnboundValue) ? LOGICAL_ELT(closure, 0) : FALSE;
         }
         if (strcmp(opchar, "<<-") == 0 && parent_env != env0)
         {
             SEXP val0 = NULL;
             PROTECT_INDEX ipx2 = 0;
-            PROTECT_WITH_INDEX(val0 = R_getVarEx(sym, parent_env, FALSE, R_UnboundValue), &ipx2);
+            PROTECT_WITH_INDEX(val0 = R_getVarEx1(sym, parent_env, FALSE), &ipx2);
             Rboolean notinframe = (val0 == R_UnboundValue && parent_env != env0);
             while (notinframe)
             {
                 parent_env = R_ParentEnv(parent_env);
-                REPROTECT(val0 = R_getVarEx(sym, parent_env, FALSE, R_UnboundValue), ipx2);
+                REPROTECT(val0 = R_getVarEx1(sym, parent_env, FALSE), ipx2);
                 notinframe = (val0 == R_UnboundValue && parent_env != env0);
             }
             UNPROTECT(1);
@@ -425,7 +425,7 @@ void import_fun(SEXP op, SEXP call, SEXP rho, SEXP envi, SEXP enclos, SEXP srcre
         int nprotect = 4;
         if (verbose)
             Rprintf("PKG_SYMBOL: %s, %s\n", CHAR(PRINTNAME(pkg)), CHAR(PRINTNAME(pkgfun)));
-        SEXP pkg0 = PROTECT(R_getVarEx(pkgfun, envi, FALSE, R_UnboundValue));
+        SEXP pkg0 = PROTECT(R_getVarEx1(pkgfun, envi, FALSE));
         if (pkg0 == R_UnboundValue)
         {
             Rf_defineVar(pkgfun, PROTECT(Rf_ScalarString(PRINTNAME(pkg))), envi);
@@ -452,7 +452,7 @@ void import_fun(SEXP op, SEXP call, SEXP rho, SEXP envi, SEXP enclos, SEXP srcre
                 nprotect++;
             }
         }
-        SEXP srcfun = PROTECT(R_getVarEx(pkgfun, srcrefi, FALSE, R_UnboundValue));
+        SEXP srcfun = PROTECT(R_getVarEx1(pkgfun, srcrefi, FALSE));
         SEXP srcfun1 = NULL;
         if (srcfun != R_UnboundValue)
         {
@@ -470,7 +470,7 @@ void import_fun(SEXP op, SEXP call, SEXP rho, SEXP envi, SEXP enclos, SEXP srcre
         }
         else
             srcfun1 = PROTECT(Rf_allocVector(VECSXP, 1));
-        SEXP nmsrc = PROTECT(R_getVarEx(Rf_install(".__srcref__"), enclos, TRUE, R_UnboundValue));
+        SEXP nmsrc = PROTECT(R_getVarEx1(Rf_install(".__srcref__"), enclos, TRUE));
         SET_VECTOR_ELT(srcfun1, Rf_length(srcfun1) - 1, nmsrc);
         Rf_defineVar(pkgfun, srcfun1, srcrefi);
         UNPROTECT(nprotect);

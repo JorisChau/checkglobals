@@ -11,7 +11,6 @@
 #define R_BELOW_4_5
 #define R_ClosureFormals(x) FORMALS(x)
 #define R_ParentEnv(x) ENCLOS(x)
-SEXP R_getVarEx(SEXP sym, SEXP rho, Rboolean inherits, SEXP ifnotfound);
 #endif
 
 // constants
@@ -36,6 +35,7 @@ typedef struct R_args
 } R_args;
 
 // helpers
+SEXP R_getVarEx1(SEXP sym, SEXP rho, Rboolean inherits);
 int ddval(SEXP symbol);
 int strmatch(const char *target, const char **table, int len);
 SEXP matcharg_bypos(SEXP op, SEXP call, SEXP rho, int argpos);
