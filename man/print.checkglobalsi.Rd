@@ -26,6 +26,8 @@ The following arguments can be specified:
 \itemize{
 \item \code{all.names}, a logical value.  If \code{TRUE}, all object names are returned.
 If \code{FALSE}, names which begin with a \samp{.} are omitted. Defaults to \code{TRUE}.
+\item \code{includePkgs}, a character vector of imported package names. Only the imports for these packages are printed.
+Defaults to \code{NA}, which includes all detected packages in the printed output.
 \item \code{maxRef}, the maximum number of printed source code references per detected global/import.
 Defaults to 1.
 \item \code{maxLines}, the maximum number of printed lines per source code reference, only used if

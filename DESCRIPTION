@@ -1,8 +1,8 @@
 Package: checkglobals
 Type: Package
 Title: Static Analysis of R-Code Dependencies
-Version: 0.1.1
-Date: 2023-06-27
+Version: 0.1.3
+Date: 2025-02-05
 Authors@R: person("Joris", "Chau", email = "joris.chau@openanalytics.eu", role = c("aut", "cre"))
 Description: A minimal R-package to approximately detect global and imported functions or variables from R-source code or R-packages by static code analysis.
 BugReports: https://github.com/JorisChau/checkglobals/issues
@@ -15,4 +15,4 @@ Suggests:
 Encoding: UTF-8
 License: MIT + file LICENSE
 Language: en-US
-RoxygenNote: 7.2.0
+RoxygenNote: 7.3.2

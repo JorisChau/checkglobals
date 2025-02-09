@@ -18,3 +18,5 @@ README.Rmd
 /doc/
 /Meta/
 .vscode
+checkglobals.Rproj
+/docker/

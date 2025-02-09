@@ -6,10 +6,10 @@
 <!-- badges: start -->
 
 [![CRAN
-version](http://www.r-pkg.org/badges/version/checkglobals)](https://cran.r-project.org/package=checkglobals)
+version](https://www.r-pkg.org/badges/version/checkglobals)](https://cran.r-project.org/package=checkglobals)
 [![R-CMD-check](https://github.com/JorisChau/checkglobals/workflows/R-CMD-check/badge.svg)](https://github.com/JorisChau/checkglobals/actions)
 [![codecov](https://codecov.io/gh/JorisChau/checkglobals/branch/master/graph/badge.svg)](https://app.codecov.io/gh/JorisChau/checkglobals)
-[![status](https://tinyverse.netlify.com/badge/checkglobals)](https://CRAN.R-project.org/package=checkglobals)
+[![status](https://tinyverse.netlify.app/badge/checkglobals)](https://CRAN.R-project.org/package=checkglobals)
 <!-- badges: end -->
 
 The minimal {checkglobals}-package allows to approximately detect global
@@ -90,6 +90,15 @@ are first extracted into a temporary R-script with `knitr::purl()`,
 which is then analyzed by `checkglobals()`:
 
 <img src="man/figures/README/screen-2c.svg" width="85%" style="display: block; margin: auto;" />
+
+### R Markdown files
+
+The `file` argument in `checkglobals()` also accepts R Markdown (`.Rmd`
+or `.Rmarkdown`) file locations. For R Markdown files, the R code chunks
+are first extracted into a temporary R-script with `knitr::purl()`,
+which is then analyzed by `checkglobals()`:
+
+<img src="./README/screen-2c.svg" width="85%" style="display: block; margin: auto;" />
 
 ### Folders
 
@@ -194,21 +203,21 @@ checkglobals::as_vector(chk)[["package"]]
 Other useful functions and R-packages with design goals and/or
 functionality related to {checkglobals} include:
 
--   `codetools::findGlobals()`, detects global variables from R-scripts
-    via static code analysis. This and other *codetools* functions
-    underlie the source code checks run by `R CMD check`.
--   [globals](https://CRAN.R-project.org/package=globals), R-package
-    by H. Bengtsson providing a re-implementation of the functions in
-    *codetools* to identify global variables using various strategies
-    for export in parallel computations.
--   `renv::dependencies()`, detects R-package dependencies by scanning
-    all R-files in a project for imported functions or packages via
-    static code analysis.
--   [lintr](https://CRAN.R-project.org/package=lintr), R-package by J.
-    Hester and others to perform general static code analysis in R
-    projects. `lintr::object_usage_linter()` provides a wrapper of
-    `codetools::checkUsage()` to detect global variables similar to
-    `R CMD check`.
+- `codetools::findGlobals()`, detects global variables from R-scripts
+  via static code analysis. This and other *codetools* functions
+  underlie the source code checks run by `R CMD check`.
+- [globals](https://CRAN.R-project.org/package=globals), R-package by H.
+  Bengtsson providing a re-implementation of the functions in
+  *codetools* to identify global variables using various strategies for
+  export in parallel computations.
+- `renv::dependencies()`, detects R-package dependencies by scanning all
+  R-files in a project for imported functions or packages via static
+  code analysis.
+- [lintr](https://CRAN.R-project.org/package=lintr), R-package by J.
+  Hester and others to perform general static code analysis in R
+  projects. `lintr::object_usage_linter()` provides a wrapper of
+  `codetools::checkUsage()` to detect global variables similar to
+  `R CMD check`.
 
 ## License
 

@@ -40,7 +40,7 @@ a data.frame with three character columns:
 \itemize{
 \item \code{name}, the name of the global or imported function/variable.
 \item \code{package}, the import package, only applies to imported functions/variables.
-\item \code{type}, the type of the detected entity, either \code{"global"} or {"import"}.
+\item \code{type}, the type of the detected entity, either \code{"global"} or \code{"import"}.
 }
 }
 \description{

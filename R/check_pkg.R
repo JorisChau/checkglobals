@@ -39,8 +39,7 @@
 #' ## from bundled R-package
 #' \donttest{
 #'   check_pkg(
-#'     pkg = "https://cran.r-project.org/src/contrib/tinytest_1.4.1.tar.gz",
-#'     skip_globals = "cluster"
+#'     pkg = "https://cran.r-project.org/src/contrib/tinytest_1.4.1.tar.gz"
 #'   )
 #' }
 #' @export
@@ -81,8 +80,8 @@ check_pkg <- function(pkg = ".", include_compiled = FALSE, skip_globals = NULL) 
   expr <- lapply(rfiles, parse, keep.source = TRUE)
   check <- .check_internal(
     expr = expr,
+    is_pkg = TRUE,
     include_compiled = include_compiled,
-    include_datasets = TRUE,
     skip_globals = skip_globals
   )
 
@@ -90,11 +89,13 @@ check_pkg <- function(pkg = ".", include_compiled = FALSE, skip_globals = NULL) 
   ns <- parseNamespaceFile(basename(pkg), dirname(pkg))
   nsenv <- new.env(hash = TRUE, parent = emptyenv())
   missing_pkgs <- character(0)
+  ns_pkgs <- character(0)
   if(length(ns$imports)) {
     is_pkg <- (lengths(ns$imports) == 1L)
     is_pkg[!is_pkg] <- vapply(ns$imports[!is_pkg], function(x) !is.null(names(x)), logical(1))
     pkgs <- ns$imports[is_pkg]
     found_pkgs <- .find_pkgs(pkgs)
+    ns_pkgs <- c(ns_pkgs, names(found_pkgs))
     missing_pkgs <- names(found_pkgs)[!found_pkgs]
     pkgs <- pkgs[found_pkgs]
     if(length(pkgs)) {
@@ -114,7 +115,9 @@ check_pkg <- function(pkg = ".", include_compiled = FALSE, skip_globals = NULL) 
           return(NULL)
         }
       })
-      nsenv <- list2env(unlist(nspkg, recursive = FALSE), hash = TRUE, parent = emptyenv())
+      if(any(lengths(nspkg))) {
+        nsenv <- list2env(unlist(nspkg, recursive = FALSE), hash = TRUE, parent = emptyenv())
+      }
     }
     funs <- ns$imports[!is_pkg & lengths(ns$imports) == 2L]
     if(length(funs)) {
@@ -133,6 +136,7 @@ check_pkg <- function(pkg = ".", include_compiled = FALSE, skip_globals = NULL) 
       fun_pkgs <- unique(unlist(nsfun, recursive = FALSE))
       missing_fun_pkgs <- fun_pkgs[!.find_pkgs(fun_pkgs)]
       missing_pkgs <- union(missing_pkgs, missing_fun_pkgs)
+      ns_pkgs <- union(ns_pkgs, fun_pkgs)
     }
   }
   if(length(ns$importMethods)) {
@@ -141,18 +145,19 @@ check_pkg <- function(pkg = ".", include_compiled = FALSE, skip_globals = NULL) 
       names(vars) <- m[[2]]
       return(vars)
     })
-    nsenv <- list2env(unlist(nsmethod, recursive = FALSE), hash = TRUE, parent = nsenv)
+    nsmethod <- unlist(nsmethod, recursive = FALSE)
+    nsenv <- list2env(nsmethod, hash = TRUE, parent = nsenv)
     method_pkgs <- unique(unlist(nsmethod, recursive = FALSE))
     missing_method_pkgs <- method_pkgs[!.find_pkgs(method_pkgs)]
     missing_pkgs <- union(missing_pkgs, missing_method_pkgs)
+    ns_pkgs <- union(ns_pkgs, method_pkgs)
   }
 
   ## collect pkg R folder imports
   pkgs <- unique(get(".__pkgs__", envir = check$imports, inherits = FALSE))
   rm(list = ".__pkgs__", envir = check$imports, inherits = FALSE)
   missing_pkgs <- union(missing_pkgs, pkgs[!.find_pkgs(pkgs)])
-  pkgs <- setdiff(pkgs, missing_pkgs)
-
+  pkgs <- setdiff(pkgs, c(basename(pkg), missing_pkgs))
   if(length(pkgs)) {
     pkgfuns <-  lapply(unlist(pkgs), function(p) {
       ns <- try(getNamespace(p), silent = TRUE)
@@ -210,7 +215,8 @@ check_pkg <- function(pkg = ".", include_compiled = FALSE, skip_globals = NULL) 
             srcref = srcrefi
           ), class = "checkglobalsi"
         ),
-        missing_pkgs = missing_pkgs
+        missing_pkgs = missing_pkgs,
+        loaded_pkgs = ns_pkgs
       ), class = "checkglobals"
     )
   )

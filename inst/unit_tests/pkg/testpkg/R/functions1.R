@@ -35,13 +35,19 @@ f4 <- function(y) {
   is.unit(structure("cm", class = "unit"))
 }
 
-f6 <- function(y) {
+f6a <- function(y) {
   x1 <- x2 <- y
   x3 = y
-  x4 <<- y
+  local({
+    x4 <<- y
+  })
   assign(value = y, x = "x5")
   delayedAssign(val = y, x = "x6")
-  x1; x2; x3; x4; x5; x6
+  y -> x7
+  local({
+    y ->> x8
+  })
+  x1; x2; x3; x4; x5; x6; x7; x8
 }
 
 f7 <- function(y) {
@@ -88,7 +94,8 @@ f11 <- function(y) {
   pvec(1, "g")
   pvec(v = 1, mc.cores = 1L)
   parallel::pvec(mc.cores = 1L, 1, "g")
-
+  y %>%
+    sapply("g", n = 1)
 }
 
 f12 <- function(y) {
@@ -138,3 +145,30 @@ f18 <- R6::R6Class("f18",
                      p = list()
                    )
 )
+
+f19 <- function(y) {
+  fLoad(y)
+  xauth
+  fAttach(y)
+  .onLoad <- function(libname, pkgname) {
+    fLoad2 <- function(x) x
+  }
+  fLoad2(y)
+}
+
+f20 <- function(y) {
+  ff20 <- function() {
+    stats::sd(x)
+  }
+  x <- c(-1, 1)
+  return(ff20)
+}
+
+f21 <- function(y) {
+  on.exit(rm(x1))
+  invisible(x1 <- y)
+}
+
+f22 <- function(y) {
+    y[order(y$el1, y$el2), ]
+}

@@ -96,16 +96,17 @@ check_source <- function(file, text, dir, include_compiled = FALSE, skip_globals
   ## check R source code
   check <- .check_internal(
     expr = expr,
+    is_pkg = FALSE,
     include_compiled = include_compiled,
-    include_datasets = FALSE,
     skip_globals = skip_globals
   )
 
   ## collect imports
-  pkgs <- unique(get(".__pkgs__", envir = check$imports, inherits = FALSE))
+  loaded_pkgs <- unique(get(".__pkgs__", envir = check$imports, inherits = FALSE))
+  loaded_pkgs <- loaded_pkgs %||% character(0)
   rm(list = ".__pkgs__", envir = check$imports, inherits = FALSE)
-  missing_pkgs <- pkgs[!.find_pkgs(pkgs)]
-  pkgs <- setdiff(pkgs, missing_pkgs)
+  missing_pkgs <- loaded_pkgs[!.find_pkgs(loaded_pkgs)]
+  pkgs <- setdiff(loaded_pkgs, missing_pkgs)
   if(length(pkgs)) {
     pkgfuns <-  lapply(pkgs, function(p) {
       ns <- try(getNamespace(p), silent = TRUE)
@@ -163,7 +164,8 @@ check_source <- function(file, text, dir, include_compiled = FALSE, skip_globals
             srcref = srcrefi
           ), class = "checkglobalsi"
         ),
-        missing_pkgs = missing_pkgs
+        missing_pkgs = missing_pkgs,
+        loaded_pkgs = loaded_pkgs
       ), class = "checkglobals"
     )
   )
