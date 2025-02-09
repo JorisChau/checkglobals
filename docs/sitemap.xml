@@ -1,81 +1,29 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://jorischau.github.io/checkglobals/404.html</loc>
-  </url>
-  <url>
-    <loc>https://jorischau.github.io/checkglobals/LICENSE-text.html</loc>
-  </url>
-  <url>
-    <loc>https://jorischau.github.io/checkglobals/LICENSE.html</loc>
-  </url>
-  <url>
-    <loc>https://jorischau.github.io/checkglobals/authors.html</loc>
-  </url>
-  <url>
-    <loc>https://jorischau.github.io/checkglobals/index.html</loc>
-  </url>
-  <url>
-    <loc>https://jorischau.github.io/checkglobals/news/index.html</loc>
-  </url>
-  <url>
-    <loc>https://jorischau.github.io/checkglobals/reference/as.character.checkglobals.html</loc>
-  </url>
-  <url>
-    <loc>https://jorischau.github.io/checkglobals/reference/as.character.checkglobalsg.html</loc>
-  </url>
-  <url>
-    <loc>https://jorischau.github.io/checkglobals/reference/as.character.checkglobalsi.html</loc>
-  </url>
-  <url>
-    <loc>https://jorischau.github.io/checkglobals/reference/as.data.frame.checkglobals.html</loc>
-  </url>
-  <url>
-    <loc>https://jorischau.github.io/checkglobals/reference/as.data.frame.checkglobalsg.html</loc>
-  </url>
-  <url>
-    <loc>https://jorischau.github.io/checkglobals/reference/as.data.frame.checkglobalsi.html</loc>
-  </url>
-  <url>
-    <loc>https://jorischau.github.io/checkglobals/reference/as.matrix.checkglobals.html</loc>
-  </url>
-  <url>
-    <loc>https://jorischau.github.io/checkglobals/reference/as.matrix.checkglobalsg.html</loc>
-  </url>
-  <url>
-    <loc>https://jorischau.github.io/checkglobals/reference/as.matrix.checkglobalsi.html</loc>
-  </url>
-  <url>
-    <loc>https://jorischau.github.io/checkglobals/reference/as_vector.checkglobals.html</loc>
-  </url>
-  <url>
-    <loc>https://jorischau.github.io/checkglobals/reference/as_vector.checkglobalsg.html</loc>
-  </url>
-  <url>
-    <loc>https://jorischau.github.io/checkglobals/reference/as_vector.checkglobalsi.html</loc>
-  </url>
-  <url>
-    <loc>https://jorischau.github.io/checkglobals/reference/as_vector.html</loc>
-  </url>
-  <url>
-    <loc>https://jorischau.github.io/checkglobals/reference/check_pkg.html</loc>
-  </url>
-  <url>
-    <loc>https://jorischau.github.io/checkglobals/reference/check_source.html</loc>
-  </url>
-  <url>
-    <loc>https://jorischau.github.io/checkglobals/reference/checkglobals.html</loc>
-  </url>
-  <url>
-    <loc>https://jorischau.github.io/checkglobals/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>https://jorischau.github.io/checkglobals/reference/print.checkglobals.html</loc>
-  </url>
-  <url>
-    <loc>https://jorischau.github.io/checkglobals/reference/print.checkglobalsg.html</loc>
-  </url>
-  <url>
-    <loc>https://jorischau.github.io/checkglobals/reference/print.checkglobalsi.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>https://jorischau.github.io/checkglobals/404.html</loc></url>
+<url><loc>https://jorischau.github.io/checkglobals/LICENSE-text.html</loc></url>
+<url><loc>https://jorischau.github.io/checkglobals/LICENSE.html</loc></url>
+<url><loc>https://jorischau.github.io/checkglobals/authors.html</loc></url>
+<url><loc>https://jorischau.github.io/checkglobals/index.html</loc></url>
+<url><loc>https://jorischau.github.io/checkglobals/news/index.html</loc></url>
+<url><loc>https://jorischau.github.io/checkglobals/reference/as.character.checkglobals.html</loc></url>
+<url><loc>https://jorischau.github.io/checkglobals/reference/as.character.checkglobalsg.html</loc></url>
+<url><loc>https://jorischau.github.io/checkglobals/reference/as.character.checkglobalsi.html</loc></url>
+<url><loc>https://jorischau.github.io/checkglobals/reference/as.data.frame.checkglobals.html</loc></url>
+<url><loc>https://jorischau.github.io/checkglobals/reference/as.data.frame.checkglobalsg.html</loc></url>
+<url><loc>https://jorischau.github.io/checkglobals/reference/as.data.frame.checkglobalsi.html</loc></url>
+<url><loc>https://jorischau.github.io/checkglobals/reference/as.matrix.checkglobals.html</loc></url>
+<url><loc>https://jorischau.github.io/checkglobals/reference/as.matrix.checkglobalsg.html</loc></url>
+<url><loc>https://jorischau.github.io/checkglobals/reference/as.matrix.checkglobalsi.html</loc></url>
+<url><loc>https://jorischau.github.io/checkglobals/reference/as_vector.checkglobals.html</loc></url>
+<url><loc>https://jorischau.github.io/checkglobals/reference/as_vector.checkglobalsg.html</loc></url>
+<url><loc>https://jorischau.github.io/checkglobals/reference/as_vector.checkglobalsi.html</loc></url>
+<url><loc>https://jorischau.github.io/checkglobals/reference/as_vector.html</loc></url>
+<url><loc>https://jorischau.github.io/checkglobals/reference/check_pkg.html</loc></url>
+<url><loc>https://jorischau.github.io/checkglobals/reference/check_source.html</loc></url>
+<url><loc>https://jorischau.github.io/checkglobals/reference/checkglobals.html</loc></url>
+<url><loc>https://jorischau.github.io/checkglobals/reference/index.html</loc></url>
+<url><loc>https://jorischau.github.io/checkglobals/reference/print.checkglobals.html</loc></url>
+<url><loc>https://jorischau.github.io/checkglobals/reference/print.checkglobalsg.html</loc></url>
+<url><loc>https://jorischau.github.io/checkglobals/reference/print.checkglobalsi.html</loc></url>
 </urlset>
+

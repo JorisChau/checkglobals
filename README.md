@@ -91,15 +91,6 @@ which is then analyzed by `checkglobals()`:
 
 <img src="man/figures/README/screen-2c.svg" width="85%" style="display: block; margin: auto;" />
 
-### R Markdown files
-
-The `file` argument in `checkglobals()` also accepts R Markdown (`.Rmd`
-or `.Rmarkdown`) file locations. For R Markdown files, the R code chunks
-are first extracted into a temporary R-script with `knitr::purl()`,
-which is then analyzed by `checkglobals()`:
-
-<img src="./README/screen-2c.svg" width="85%" style="display: block; margin: auto;" />
-
 ### Folders
 
 Folders containing R-scripts can be scanned with the `dir` argument in
@@ -180,18 +171,19 @@ as.data.frame(chk)
 #> 10          col_green     cli import
 #> 11           col_grey     cli import
 #> 12            col_red     cli import
-#> 13         col_yellow     cli import
-#> 14      console_width     cli import
-#> 15         style_bold     cli import
-#> 16    style_hyperlink     cli import
-#> 17       style_italic     cli import
-#> 18             symbol     cli import
-#> 19               tree     cli import
-#> 20               purl   knitr import
-#> 21      download.file   utils import
-#> 22 installed.packages   utils import
-#> 23             relist   utils import
-#> 24              untar   utils import
+#> 13          col_white     cli import
+#> 14         col_yellow     cli import
+#> 15      console_width     cli import
+#> 16         style_bold     cli import
+#> 17    style_hyperlink     cli import
+#> 18       style_italic     cli import
+#> 19             symbol     cli import
+#> 20               tree     cli import
+#> 21               purl   knitr import
+#> 22      download.file   utils import
+#> 23 installed.packages   utils import
+#> 24             relist   utils import
+#> 25              untar   utils import
 
 ## vector of package dependencies
 checkglobals::as_vector(chk)[["package"]]
