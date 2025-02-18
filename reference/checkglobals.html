@@ -309,26 +309,21 @@ remote file location (e.g. a server or the web).</p></li>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">Detected imported functions or variables</span> <span style="color: #00BBBB;">────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="font-weight: bold;">grDevices</span>   [<span style="color: #BB0000;">◼◼</span><span style="color: #555555;">◻◻◻◻◻◻◻◻</span>] <span style="color: #555555; font-style: italic;">2/17</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ├─ dev.off           <span style="color: #0000BB;">tinytest.R#560</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   └─ pdf               <span style="color: #0000BB;">tinytest.R#589</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="font-weight: bold;">parallel</span>    [<span style="color: #00BB00;">◼◼◼◼◼◼◼</span><span style="color: #555555;">◻◻◻</span>] <span style="color: #555555; font-style: italic;">7/17</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ├─ clusterCall       <span style="color: #0000BB;">tinytest.R#1046</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ├─ clusterEvalQ      <span style="color: #0000BB;">tinytest.R#880</span> <span style="color: #555555; font-style: italic;">and 1 more...</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ├─ clusterExport     <span style="color: #0000BB;">tinytest.R#1043</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ├─ makeCluster       <span style="color: #0000BB;">tinytest.R#1030</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ├─ parLapply         <span style="color: #0000BB;">tinytest.R#881</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   └─ stopCluster       <span style="color: #0000BB;">tinytest.R#1000</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="font-weight: bold;">tinytest</span>    [<span style="color: #BBBB00;">◼◼◼◼</span><span style="color: #555555;">◻◻◻◻◻◻</span>] <span style="color: #555555; font-style: italic;">4/17</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ├─ at_home           <span style="color: #0000BB;">tinytest.R#320</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ├─ expect_equal      <span style="color: #0000BB;">expectations.R#834</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ├─ expect_equivalent <span style="color: #0000BB;">expectations.R#834</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   └─ expect_null       <span style="color: #0000BB;">expectations.R#847</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="font-weight: bold;">utils</span>       [<span style="color: #BBBB00;">◼◼◼◼</span><span style="color: #555555;">◻◻◻◻◻◻</span>] <span style="color: #555555; font-style: italic;">4/17</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ├─ capture.output    <span style="color: #0000BB;">methods.R#197</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ├─ file_test         <span style="color: #0000BB;">tinytest.R#570</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ├─ getFromNamespace  <span style="color: #0000BB;">tinytest.R#384</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   └─ install.packages  <span style="color: #0000BB;">tinytest.R#1140</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="font-weight: bold;">grDevices</span>   [<span style="color: #BB0000;">◼◼</span><span style="color: #555555;">◻◻◻◻◻◻◻◻</span>] <span style="color: #555555; font-style: italic;">2/13</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ├─ dev.off          <span style="color: #0000BB;">tinytest.R#560</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   └─ pdf              <span style="color: #0000BB;">tinytest.R#589</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="font-weight: bold;">parallel</span>    [<span style="color: #00BB00;">◼◼◼◼◼◼◼</span><span style="color: #555555;">◻◻◻</span>] <span style="color: #555555; font-style: italic;">7/13</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ├─ clusterCall      <span style="color: #0000BB;">tinytest.R#1046</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ├─ clusterEvalQ     <span style="color: #0000BB;">tinytest.R#880</span> <span style="color: #555555; font-style: italic;">and 1 more...</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ├─ clusterExport    <span style="color: #0000BB;">tinytest.R#1043</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ├─ makeCluster      <span style="color: #0000BB;">tinytest.R#1030</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ├─ parLapply        <span style="color: #0000BB;">tinytest.R#881</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   └─ stopCluster      <span style="color: #0000BB;">tinytest.R#1000</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  <span style="font-weight: bold;">utils</span>       [<span style="color: #BBBB00;">◼◼◼◼</span><span style="color: #555555;">◻◻◻◻◻◻</span>] <span style="color: #555555; font-style: italic;">4/13</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ├─ capture.output   <span style="color: #0000BB;">methods.R#197</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ├─ file_test        <span style="color: #0000BB;">tinytest.R#570</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ├─ getFromNamespace <span style="color: #0000BB;">tinytest.R#384</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   └─ install.packages <span style="color: #0000BB;">tinytest.R#1140</span></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
