@@ -1,4 +1,4 @@
-.check_internal <- function(expr, is_pkg = FALSE, include_compiled = FALSE, skip_globals = NULL, verbose = FALSE) {
+.check_internal <- function(expr, is_pkg = FALSE, include_compiled = FALSE, skip_globals = NULL, verbose = FALSE, pkg_name = "") {
 
   ## initialize environments
   env0 <- list2env(
@@ -36,7 +36,8 @@
   .Call(
     walk_expr,
     expr, env0, envi, envg, environment(), srcrefi, srcrefg,
-    isTRUE(is_pkg), isTRUE(include_compiled), isTRUE(verbose)
+    isTRUE(is_pkg), isTRUE(include_compiled), isTRUE(verbose),
+    as.character(pkg_name)
   )
 
   ## filter globals

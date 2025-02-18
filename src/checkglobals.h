@@ -32,6 +32,7 @@ typedef struct R_args
     Rboolean skip_closure;
     const char *parent_opchar;
     int pending_exit[3];
+    const char *pkgname;
 } R_args;
 
 // helpers
@@ -47,7 +48,7 @@ void import_ns(SEXP op, const char *opchar, SEXP call, SEXP rho, SEXP envi, SEXP
 void fun_call(SEXP op, SEXP call, SEXP enclos);
 void inline_fun(SEXP call, SEXP enclos, R_args *args);
 void local_assign(SEXP op, const char *opchar, SEXP call, SEXP rho, SEXP env0, SEXP enclos, Rboolean verbose);
-void import_fun(SEXP op, SEXP call, SEXP rho, SEXP envi, SEXP enclos, SEXP srcrefi, Rboolean verbose);
+void import_fun(SEXP op, SEXP call, SEXP rho, SEXP envi, SEXP enclos, SEXP srcrefi, R_args *args);
 void local_expr(SEXP enclos);
 void exit_expr(SEXP call, SEXP enclos, R_args *args);
 void compiled_call(SEXP op, SEXP call, SEXP rho, SEXP env0, Rboolean verbose);
@@ -57,6 +58,6 @@ void special_funs(SEXP op, const char *opchar, SEXP call, SEXP rho, SEXP env0, R
 
 // exported function
 SEXP walk_expr(SEXP expr, SEXP env0, SEXP envi, SEXP envg, SEXP rho, SEXP srcrefi, SEXP srcrefg,
-               SEXP R_is_pkg, SEXP R_include_compiled, SEXP R_verbose);
+               SEXP R_is_pkg, SEXP R_include_compiled, SEXP R_verbose, SEXP R_basepkg);
 
 #endif

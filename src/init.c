@@ -5,10 +5,10 @@
 
 /* .Call calls */
 void R_init_checkglobals(DllInfo *dll);
-extern SEXP walk_expr(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP walk_expr(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
-    {"walk_expr", (DL_FUNC)&walk_expr, 10},
+    {"walk_expr", (DL_FUNC)&walk_expr, 11},
     {NULL, NULL, 0}};
 
 void R_init_checkglobals(DllInfo *dll)
