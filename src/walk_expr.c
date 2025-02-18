@@ -181,7 +181,7 @@ static void walk(SEXP call, SEXP enclos, SEXP env0, SEXP envi, SEXP envg, SEXP r
             local_assign(op, opchar, call, rho, env0, enclos, args->verbose);
         // 7) external function calls
         if (strcmp(opchar, "::") == 0 || strcmp(opchar, ":::") == 0)
-            import_fun(op, call, rho, envi, enclos, srcrefi, args->verbose);
+            import_fun(op, call, rho, envi, enclos, srcrefi, args);
         // 8) inline functions
         if (strcmp(opchar, "function") == 0)
             inline_fun(call, enclos, args);
@@ -267,7 +267,7 @@ static void walk(SEXP call, SEXP enclos, SEXP env0, SEXP envi, SEXP envg, SEXP r
 }
 
 SEXP walk_expr(SEXP expr, SEXP env0, SEXP envi, SEXP envg, SEXP rho, SEXP srcrefi, SEXP srcrefg,
-               SEXP R_is_pkg, SEXP R_include_compiled, SEXP R_verbose)
+               SEXP R_is_pkg, SEXP R_include_compiled, SEXP R_verbose, SEXP R_basepkg)
 {
     // settings
     R_args args = {
@@ -277,7 +277,9 @@ SEXP walk_expr(SEXP expr, SEXP env0, SEXP envi, SEXP envg, SEXP rho, SEXP srcref
         .verbose = LOGICAL_ELT(R_verbose, 0),
         .skip_closure = FALSE,
         .parent_opchar = "",
-        .pending_exit = {0, 0, 0}};
+        .pending_exit = {0, 0, 0},
+        .pkgname = CHAR(STRING_ELT(R_basepkg, 0))
+    };
     // recurse
     walk(expr, env0, env0, envi, envg, rho, srcrefi, srcrefg, &args);
     // no return value

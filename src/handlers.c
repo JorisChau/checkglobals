@@ -408,7 +408,7 @@ void local_assign(SEXP op, const char *opchar, SEXP call, SEXP rho, SEXP env0, S
   imports and globals environments.
 
 */
-void import_fun(SEXP op, SEXP call, SEXP rho, SEXP envi, SEXP enclos, SEXP srcrefi, Rboolean verbose)
+void import_fun(SEXP op, SEXP call, SEXP rho, SEXP envi, SEXP enclos, SEXP srcrefi, R_args *args)
 {
     PROTECT_INDEX ipx = 0, ipxf = 0;
     SEXP pkg = NULL, pkgfun = NULL;
@@ -420,10 +420,11 @@ void import_fun(SEXP op, SEXP call, SEXP rho, SEXP envi, SEXP enclos, SEXP srcre
     if (TYPEOF(pkgfun) == STRSXP && Rf_length(pkgfun) == 1)
         REPROTECT(pkgfun = Rf_installChar(STRING_ELT(pkgfun, 0)), ipxf);
 
-    if (Rf_isSymbol(pkg) && Rf_isSymbol(pkgfun) && strcmp(CHAR(PRINTNAME(pkg)), "base") != 0)
-    {
+    if (Rf_isSymbol(pkg) && Rf_isSymbol(pkgfun) && strcmp(CHAR(PRINTNAME(pkg)), "base") != 0 && 
+       (!(args->is_pkg) || strcmp(CHAR(PRINTNAME(pkg)), args->pkgname) != 0)) {
+        
         int nprotect = 4;
-        if (verbose)
+        if (args->verbose)
             Rprintf("PKG_SYMBOL: %s, %s\n", CHAR(PRINTNAME(pkg)), CHAR(PRINTNAME(pkgfun)));
         SEXP pkg0 = PROTECT(R_getVarEx1(pkgfun, envi, FALSE));
         if (pkg0 == R_UnboundValue)

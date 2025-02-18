@@ -76,13 +76,15 @@ check_pkg <- function(pkg = ".", include_compiled = FALSE, skip_globals = NULL) 
   }
 
   ## check pkg R folder
+  pkg_name <- read.dcf(file.path(pkg, "DESCRIPTION"))[[1, "Package"]]
   rfiles <- list.files(file.path(pkg, "R"), pattern = "\\.[rR]$", full.names = TRUE)
   expr <- lapply(rfiles, parse, keep.source = TRUE)
   check <- .check_internal(
     expr = expr,
     is_pkg = TRUE,
     include_compiled = include_compiled,
-    skip_globals = skip_globals
+    skip_globals = skip_globals,
+    pkg_name = pkg_name
   )
 
   ## collect pkg namespace imports
@@ -157,7 +159,7 @@ check_pkg <- function(pkg = ".", include_compiled = FALSE, skip_globals = NULL) 
   pkgs <- unique(get(".__pkgs__", envir = check$imports, inherits = FALSE))
   rm(list = ".__pkgs__", envir = check$imports, inherits = FALSE)
   missing_pkgs <- union(missing_pkgs, pkgs[!.find_pkgs(pkgs)])
-  pkgs <- setdiff(pkgs, c(basename(pkg), missing_pkgs))
+  pkgs <- setdiff(pkgs, c(pkg_name, missing_pkgs))
   if(length(pkgs)) {
     pkgfuns <-  lapply(unlist(pkgs), function(p) {
       ns <- try(getNamespace(p), silent = TRUE)

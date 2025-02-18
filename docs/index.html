@@ -51,7 +51,7 @@
 </h1></div>
 <!-- badges: start -->
 
-<p>The minimal {checkglobals}-package allows to approximately detect global and imported functions or variables from R-source code or R-packages by statically inspecting the internal syntax trees of the code, (i.e. <a href="https://en.wikipedia.org/wiki/Static_program_analysis" class="external-link">static code analysis</a>). The aim of this package is to serve as a fast and light-weight alternative to <code><a href="https://rdrr.io/pkg/codetools/man/findGlobals.html" class="external-link">codetools::findGlobals()</a></code> to check R-packages or R-scripts for missing function imports and/or variable definitions on-the-fly without the need for package installation or code execution. The code inspection procedures are implemented using R’s internal C API for efficiency, and no external R-package dependencies are strictly required (only <a href="https://CRAN.R-project.org/package=cli" class="external-link">cli</a> is suggested for interactive use).</p>
+<p>The minimal {checkglobals}-package allows to approximately detect global and imported functions or variables from R-source code or R-packages by statically inspecting the internal syntax trees of the code, (i.e. <a href="https://en.wikipedia.org/wiki/Static_program_analysis" class="external-link">static code analysis</a>). The aim of this package is to serve as a fast and light-weight alternative to <code><a href="https://rdrr.io/pkg/codetools/man/findGlobals.html" class="external-link">codetools::findGlobals()</a></code> to check R-packages or R-scripts for missing function imports and/or variable definitions on-the-fly without the need for package installation or code execution. The code inspection procedures are implemented using R’s internal C API for efficiency, and no external R-package dependencies are strictly required, only <a href="https://CRAN.R-project.org/package=cli" class="external-link">cli</a> and <a href="https://CRAN.R-project.org/package=knitr" class="external-link">knitr</a> are suggested for interactive use and checking Rmd documents respectively.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -70,56 +70,58 @@
 <h3 id="r-scripts">R-scripts<a class="anchor" aria-label="anchor" href="#r-scripts"></a>
 </h3>
 <p>The {checkglobals}-package contains a single wrapper function <code><a href="reference/checkglobals.html">checkglobals()</a></code> to inspect R-scripts, folders, R-code strings or R-packages. Individual R-scripts can be scanned for global variables and imported functions using the <code>file</code> argument:</p>
-<p><img src="reference/figures/README/screen-1.svg" width="85%" style="display: block; margin: auto;"></p>
+<p><img src="reference/figures/README/screen01.svg" width="85%" style="display: block; margin: auto;"></p>
 <p><br></p>
 <p>The R-script in this example contains a simple R-Shiny application available at <a href="https://raw.githubusercontent.com/rstudio/shiny-examples/main/004-mpg/app.R" class="external-link uri">https://raw.githubusercontent.com/rstudio/shiny-examples/main/004-mpg/app.R</a>.</p>
 <div class="section level4">
 <h4 id="printed-output">Printed output<a class="anchor" aria-label="anchor" href="#printed-output"></a>
 </h4>
 <p>Printing the S3-object returned by <code><a href="reference/checkglobals.html">checkglobals()</a></code> outputs: 1. the <em>name</em> and <em>location</em> of all unrecognized global variables; and 2. the <em>name</em> and <em>location</em> of all detected imported functions grouped by R-package.</p>
-<p>The <em>location</em> <code>app.R#36</code> lists the R-file name (<code>app.R</code>) and line number (<code>36</code>). If <a href="https://CRAN.R-project.org/package=cli" class="external-link">cli</a> is installed and cli-hyperlinks are supported, clicking the <em>location</em> links opens the source file at the given line number.</p>
+<p>The <em>location</em> <code>app.R#36</code> lists the R-file name (<code>app.R</code>) and line number (<code>36</code>) of the detected variable or function. If <a href="https://CRAN.R-project.org/package=cli" class="external-link">cli</a> is installed and cli-hyperlinks are supported, clicking the <em>location</em> links opens the source file pointing to the given line number. The bars and counts behind the imported package names highlight the number of function calls detected from each package. This information can be used to get a better sense of the importance of an imported package and how much effort it would take to remove it as a dependency.</p>
 <p>To inspect only the detected global variables or imported functions, index the S3-object by its <code>globals</code> (<code>chk$globals</code>) or <code>imports</code> (<code>chk$imports</code>) components. For instance, we can print detailed source code references of the unrecognized global variables with:</p>
-<p><img src="reference/figures/README/screen-2.svg" width="85%" style="display: block; margin: auto;"></p>
+<p><img src="reference/figures/README/screen02.svg" width="85%" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level4">
 <h4 id="remote-files">Remote files<a class="anchor" aria-label="anchor" href="#remote-files"></a>
 </h4>
 <p>Instead of a local file, the <code>file</code> argument in <code><a href="reference/checkglobals.html">checkglobals()</a></code> can also be a remote file location (e.g. a server or the web), in which case the remote file is first downloaded as a temporary file with <code><a href="https://rdrr.io/r/utils/download.file.html" class="external-link">download.file()</a></code>.</p>
-<p><img src="reference/figures/README/screen-2b.svg" width="85%" style="display: block; margin: auto;"></p>
+<p><img src="reference/figures/README/screen03.svg" width="85%" style="display: block; margin: auto;"></p>
 </div>
 </div>
 <div class="section level3">
 <h3 id="r-markdown-files">R Markdown files<a class="anchor" aria-label="anchor" href="#r-markdown-files"></a>
 </h3>
 <p>The <code>file</code> argument in <code><a href="reference/checkglobals.html">checkglobals()</a></code> also accepts R Markdown (<code>.Rmd</code> or <code>.Rmarkdown</code>) file locations. For R Markdown files, the R code chunks are first extracted into a temporary R-script with <code><a href="https://rdrr.io/pkg/knitr/man/knit.html" class="external-link">knitr::purl()</a></code>, which is then analyzed by <code><a href="reference/checkglobals.html">checkglobals()</a></code>:</p>
-<p><img src="reference/figures/README/screen-2c.svg" width="85%" style="display: block; margin: auto;"></p>
+<p><img src="reference/figures/README/screen04.svg" width="85%" style="display: block; margin: auto;"></p>
+<p><br></p>
+<p><strong>Note</strong>: R-packages that are imported or loaded, but have no detected function imports are displayed with an <em>n/a</em> reference. This can happen when <code><a href="reference/checkglobals.html">checkglobals()</a></code> falsely ignores one or more imported functions from the given package or when the package is not actually needed as a dependency. In both cases this is useful information to have. In the above example, <code>tibble</code> is loaded in order to use <code>tribble()</code>, but the <code>tribble()</code> function is also exported by <code>dplyr</code>, so it shows up under the <code>dplyr</code> imports instead.</p>
 </div>
 <div class="section level3">
 <h3 id="folders">Folders<a class="anchor" aria-label="anchor" href="#folders"></a>
 </h3>
 <p>Folders containing R-scripts can be scanned with the <code>dir</code> argument in <code><a href="reference/checkglobals.html">checkglobals()</a></code>, which inspects all R-scripts present in <code>dir</code>. The following example scans an R-Shiny app folder containing a <code>ui.R</code> and <code>server.R</code> file (source: <a href="https://github.com/rstudio/shiny-examples/tree/main/018-datatable-options" class="external-link uri">https://github.com/rstudio/shiny-examples/tree/main/018-datatable-options</a>),</p>
-<p><img src="reference/figures/README/screen-3.svg" width="85%" style="display: block; margin: auto;"></p>
+<p><img src="reference/figures/README/screen05.svg" width="85%" style="display: block; margin: auto;"></p>
 <p><br></p>
 <p><strong>Note</strong>: if imports are detected from an R-package not installed in the current R-session, an alert is printed as in the example above. Function calls accessing the missing R-package explicitly, using e.g. <code>::</code> or <code>:::</code>, can still be fully identified as imports by <code><a href="reference/checkglobals.html">checkglobals()</a></code>. Function calls with no reference to the missing R-package will be listed as unrecognized globals.</p>
 </div>
 <div class="section level3">
 <h3 id="r-packages">R-packages<a class="anchor" aria-label="anchor" href="#r-packages"></a>
 </h3>
-<p>R-packages can be scanned using the <code>pkg</code> argument in <code><a href="reference/checkglobals.html">checkglobals()</a></code>. Conceptually, <code><a href="reference/checkglobals.html">checkglobals()</a></code> scans all files in the R-folder and contrasts the detected (unrecognized) globals and imports against the imports listed in the NAMESPACE of the R-package. R-scripts present elsewhere in the R-package (i.e. not in the R-folder) are <em>not</em> scanned, as these are not coupled to the package NAMESPACE file. To illustrate, we can run <code><a href="reference/checkglobals.html">checkglobals()</a></code> on the checkglobals R-package folder itself:</p>
-<p><img src="reference/figures/README/screen-4.svg" width="85%" style="display: block; margin: auto;"></p>
+<p>R-package folders can be scanned with the <code>pkg</code> argument in <code><a href="reference/checkglobals.html">checkglobals()</a></code>. Conceptually, <code><a href="reference/checkglobals.html">checkglobals()</a></code> scans all files in the <code>/R</code> folder of the package and contrasts the detected (unrecognized) globals and imports against the imports listed in the NAMESPACE file of the package. R-scripts present elsewhere in the package (e.g. in the <code>/inst</code> folder) are <strong>not</strong> analyzed, as these are not coupled to the package NAMESPACE file. To illustrate, we can run <code><a href="reference/checkglobals.html">checkglobals()</a></code> on its own package folder:</p>
+<p><img src="reference/figures/README/screen06.svg" width="85%" style="display: block; margin: auto;"></p>
 <div class="section level4">
 <h4 id="bundled-r-packages">Bundled R-packages<a class="anchor" aria-label="anchor" href="#bundled-r-packages"></a>
 </h4>
-<p>Instead of local R-package folders, the <code>pkg</code> argument also accepts file paths to bundled (tar.gz) R-packages. This can either be from a location on the local filesystem, or from a remote file location, such as the web (similar to the <code>file</code> argument).</p>
+<p>Instead of local R-package folders, the <code>pkg</code> argument also accepts file paths to bundled source R-packages (tar.gz). This can either be a tar.gz package on the local filesystem, or a remote file location, such as the web (similar to the <code>file</code> argument).</p>
 <div class="section level5">
 <h5 id="local-filesystem">Local filesystem:<a class="anchor" aria-label="anchor" href="#local-filesystem"></a>
 </h5>
-<p><img src="reference/figures/README/screen-5.svg" width="85%" style="display: block; margin: auto;"></p>
+<p><img src="reference/figures/README/screen07.svg" width="85%" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level5">
 <h5 id="remote-file-location">Remote file location:<a class="anchor" aria-label="anchor" href="#remote-file-location"></a>
 </h5>
-<p><img src="reference/figures/README/screen-6.svg" width="85%" style="display: block; margin: auto;"></p>
+<p><img src="reference/figures/README/screen08a.svg" width="85%" style="margin-left:70px"><img src="reference/figures/README/screen08b.svg" width="85%" style="margin-top:-20px;margin-left:70px"></p>
 <p><br></p>
 <p><strong>Remark</strong>: if <code><a href="reference/checkglobals.html">checkglobals()</a></code> is called without a <code>file</code>, <code>dir</code>, <code>text</code> or <code>pkg</code> argument, the function is run in the current working directory. If the current working directory is an R-package folder, this is identical to <code>checkglobals(pkg = ".")</code>, otherwise the behavior is the same as <code>checkglobals(dir = ".")</code>.</p>
 </div>
@@ -128,7 +130,7 @@
 <div class="section level3">
 <h3 id="programmatic-use">Programmatic use<a class="anchor" aria-label="anchor" href="#programmatic-use"></a>
 </h3>
-<p>Several methods are available to cast the S3-objects returned by <code><a href="reference/checkglobals.html">checkglobals()</a></code> to common R-objects. This can be useful for further programmatic use of the function output. The following methods are currently available: <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code>, <code><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix()</a></code>, <code><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character()</a></code> and <code><a href="reference/as_vector.html">as_vector()</a></code>.</p>
+<p>Several methods (e.g. <code>as.data.frame</code>, <code>as.matrix</code> or <code>as.character</code>) are available to cast the S3-objects returned by <code><a href="reference/checkglobals.html">checkglobals()</a></code> to common R-objects. This can be useful for further programmatic use of the returned output:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">chk</span> <span class="op">&lt;-</span> <span class="fu">checkglobals</span><span class="fu">::</span><span class="fu"><a href="reference/checkglobals.html">checkglobals</a></span><span class="op">(</span>pkg <span class="op">=</span> <span class="st">"../checkglobals"</span><span class="op">)</span></span>
 <span></span>
@@ -164,6 +166,89 @@
 <span><span class="co">## vector of package dependencies</span></span>
 <span><span class="fu">checkglobals</span><span class="fu">::</span><span class="fu"><a href="reference/as_vector.html">as_vector</a></span><span class="op">(</span><span class="va">chk</span><span class="op">)</span><span class="op">[[</span><span class="st">"package"</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="co">#&gt; [1] "cli"   "knitr" "utils"</span></span></code></pre></div>
+</div>
+</div>
+<div class="section level2">
+<h2 id="known-limitations">Known limitations<a class="anchor" aria-label="anchor" href="#known-limitations"></a>
+</h2>
+<p>Below is a non-exhaustive list of known limitations of the static code analysis performed by <code><a href="reference/checkglobals.html">checkglobals()</a></code> to keep in mind for practical use. These are cases that are either too ambiguous or complex to be analyzed without evaluation of the code itself, where <code><a href="reference/checkglobals.html">checkglobals()</a></code> fails to recognize a variable name (false negative) or falsely detects a global variable when it should not (false positive).</p>
+<div class="section level4">
+<h4 id="character-variablefunction-names">Character variable/function names<a class="anchor" aria-label="anchor" href="#character-variablefunction-names"></a>
+</h4>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## this works (character arguments are recognized as functions)</span></span>
+<span><span class="fu"><a href="reference/checkglobals.html">checkglobals</a></span><span class="op">(</span>text <span class="op">=</span> <span class="st">'do.call(args = list(1), what = "median")'</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/checkglobals.html">checkglobals</a></span><span class="op">(</span>text <span class="op">=</span> <span class="st">'Map("g", 1, n = 1)'</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/checkglobals.html">checkglobals</a></span><span class="op">(</span>text <span class="op">=</span> <span class="st">'stats::aggregate(x ~ ., data = y, FUN = "g")'</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## this doesn't work (evaluation is required)</span></span>
+<span><span class="fu"><a href="reference/checkglobals.html">checkglobals</a></span><span class="op">(</span>text <span class="op">=</span> <span class="st">'g &lt;- "f"; Map(g, 1, n = 1)'</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/checkglobals.html">checkglobals</a></span><span class="op">(</span>text <span class="op">=</span> <span class="st">"eval(substitute(g))"</span><span class="op">)</span> <span class="co">## same for ~, expression, quote, bquote, Quote, etc.</span></span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## this works (calling a function in an exotic way)</span></span>
+<span><span class="fu"><a href="reference/checkglobals.html">checkglobals</a></span><span class="op">(</span>text <span class="op">=</span> <span class="st">'"head"(1:10)'</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/checkglobals.html">checkglobals</a></span><span class="op">(</span>text <span class="op">=</span> <span class="st">'`::`("utils", "head")(1:10)'</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/checkglobals.html">checkglobals</a></span><span class="op">(</span>text <span class="op">=</span> <span class="st">'list("function" = utils::head)$`function`(1:10)'</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## this doesn't work (evaluation is required)</span></span>
+<span><span class="fu"><a href="reference/checkglobals.html">checkglobals</a></span><span class="op">(</span>text <span class="op">=</span> <span class="st">'get("head")(1:10)'</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/checkglobals.html">checkglobals</a></span><span class="op">(</span>text <span class="op">=</span> <span class="st">'methods::getMethod("f", signature = "ANY")'</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level4">
+<h4 id="package-loading">Package loading<a class="anchor" aria-label="anchor" href="#package-loading"></a>
+</h4>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## this works (simple evaluation of package names)</span></span>
+<span><span class="fu"><a href="reference/checkglobals.html">checkglobals</a></span><span class="op">(</span>text <span class="op">=</span> <span class="st">'attachNamespace("utils"); head(1:10)'</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/checkglobals.html">checkglobals</a></span><span class="op">(</span>text <span class="op">=</span> <span class="st">'pkg &lt;- "utils"; library(pkg, character.only = TRUE); head(1:10)'</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## this doesn't work (more complex evaluation is required)</span></span>
+<span><span class="fu"><a href="reference/checkglobals.html">checkglobals</a></span><span class="op">(</span>text <span class="op">=</span> <span class="st">'pkg &lt;- function() "utils"; library(pkg(), character.only = TRUE); head(1:10)'</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/checkglobals.html">checkglobals</a></span><span class="op">(</span>text <span class="op">=</span> <span class="st">'loadPkg &lt;- library; loadPkg(utils)'</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/checkglobals.html">checkglobals</a></span><span class="op">(</span>text <span class="op">=</span> <span class="st">'box::use(utils[...])'</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level4">
+<h4 id="unknown-symbols">Unknown symbols<a class="anchor" aria-label="anchor" href="#unknown-symbols"></a>
+</h4>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## this works (special functions self, private, super are recognized)</span></span>
+<span><span class="fu"><a href="reference/checkglobals.html">checkglobals</a></span><span class="op">(</span>text <span class="op">=</span> <span class="st">'R6::R6Class("cl",</span></span>
+<span><span class="st">                   public = list(</span></span>
+<span><span class="st">                     initialize = function(...) self$f(...),</span></span>
+<span><span class="st">                     f = function(...) private$p</span></span>
+<span><span class="st">                   ),</span></span>
+<span><span class="st">                   private = list(</span></span>
+<span><span class="st">                     p = list()</span></span>
+<span><span class="st">                   ))'</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## this doesn't work (data masking)</span></span>
+<span><span class="fu"><a href="reference/checkglobals.html">checkglobals</a></span><span class="op">(</span>text <span class="op">=</span> <span class="st">'transform(mtcars, mpg2 = mpg^2)'</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/checkglobals.html">checkglobals</a></span><span class="op">(</span>text <span class="op">=</span> <span class="st">'attach(iris); print(Sepal.Width)'</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level4">
+<h4 id="lazy-evaluation">Lazy evaluation<a class="anchor" aria-label="anchor" href="#lazy-evaluation"></a>
+</h4>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## this works (basic lazy evaluation)</span></span>
+<span><span class="fu"><a href="reference/checkglobals.html">checkglobals</a></span><span class="op">(</span>text <span class="op">=</span> <span class="st">'{</span></span>
+<span><span class="st">    addy &lt;- function(y) x + y </span></span>
+<span><span class="st">    x &lt;- 0</span></span>
+<span><span class="st">    addy(1)</span></span>
+<span><span class="st">}'</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/checkglobals.html">checkglobals</a></span><span class="op">(</span></span>
+<span>  text <span class="op">=</span> <span class="st">'function() { </span></span>
+<span><span class="st">    on.exit(rm(x))</span></span>
+<span><span class="st">    x &lt;- 0 </span></span>
+<span><span class="st">}'</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## this doesn't work (lazy evaluation in external functions)</span></span>
+<span><span class="fu"><a href="reference/checkglobals.html">checkglobals</a></span><span class="op">(</span></span>
+<span>  text <span class="op">=</span> <span class="st">'server &lt;- function(input, output) {</span></span>
+<span><span class="st">    add1x &lt;- shiny::reactive({</span></span>
+<span><span class="st">      add1(input$x)</span></span>
+<span><span class="st">    })</span></span>
+<span><span class="st">    add1 &lt;- function(x) x + 1  </span></span>
+<span><span class="st">  }'</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">

@@ -2,7 +2,7 @@ pandoc: '3.2'
 pkgdown: 2.1.1
 pkgdown_sha: ~
 articles: {}
-last_built: 2025-02-09T17:06Z
+last_built: 2025-02-18T20:59Z
 urls:
   reference: https://jorischau.github.io/checkglobals/reference
   article: https://jorischau.github.io/checkglobals/articles

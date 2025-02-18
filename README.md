@@ -22,9 +22,10 @@ to `codetools::findGlobals()` to check R-packages or R-scripts for
 missing function imports and/or variable definitions on-the-fly without
 the need for package installation or code execution. The code inspection
 procedures are implemented using R’s internal C API for efficiency, and
-no external R-package dependencies are strictly required (only
-[cli](https://CRAN.R-project.org/package=cli) is suggested for
-interactive use).
+no external R-package dependencies are strictly required, only
+[cli](https://CRAN.R-project.org/package=cli) and
+[knitr](https://CRAN.R-project.org/package=knitr) are suggested for
+interactive use and checking Rmd documents respectively.
 
 ## Installation
 
@@ -46,7 +47,7 @@ The {checkglobals}-package contains a single wrapper function
 R-packages. Individual R-scripts can be scanned for global variables and
 imported functions using the `file` argument:
 
-<img src="man/figures/README/screen-1.svg" width="85%" style="display: block; margin: auto;" />
+<img src="man/figures/README/screen01.svg" width="85%" style="display: block; margin: auto;" />
 
 <br>
 
@@ -62,16 +63,21 @@ Printing the S3-object returned by `checkglobals()` outputs: 1. the
 R-package.
 
 The *location* `app.R#36` lists the R-file name (`app.R`) and line
-number (`36`). If [cli](https://CRAN.R-project.org/package=cli) is
-installed and cli-hyperlinks are supported, clicking the *location*
-links opens the source file at the given line number.
+number (`36`) of the detected variable or function. If
+[cli](https://CRAN.R-project.org/package=cli) is installed and
+cli-hyperlinks are supported, clicking the *location* links opens the
+source file pointing to the given line number. The bars and counts
+behind the imported package names highlight the number of function calls
+detected from each package. This information can be used to get a better
+sense of the importance of an imported package and how much effort it
+would take to remove it as a dependency.
 
 To inspect only the detected global variables or imported functions,
 index the S3-object by its `globals` (`chk$globals`) or `imports`
 (`chk$imports`) components. For instance, we can print detailed source
 code references of the unrecognized global variables with:
 
-<img src="man/figures/README/screen-2.svg" width="85%" style="display: block; margin: auto;" />
+<img src="man/figures/README/screen02.svg" width="85%" style="display: block; margin: auto;" />
 
 #### Remote files
 
@@ -80,7 +86,7 @@ also be a remote file location (e.g. a server or the web), in which case
 the remote file is first downloaded as a temporary file with
 `download.file()`.
 
-<img src="man/figures/README/screen-2b.svg" width="85%" style="display: block; margin: auto;" />
+<img src="man/figures/README/screen03.svg" width="85%" style="display: block; margin: auto;" />
 
 ### R Markdown files
 
@@ -89,7 +95,18 @@ or `.Rmarkdown`) file locations. For R Markdown files, the R code chunks
 are first extracted into a temporary R-script with `knitr::purl()`,
 which is then analyzed by `checkglobals()`:
 
-<img src="man/figures/README/screen-2c.svg" width="85%" style="display: block; margin: auto;" />
+<img src="man/figures/README/screen04.svg" width="85%" style="display: block; margin: auto;" />
+
+<br>
+
+**Note**: R-packages that are imported or loaded, but have no detected
+function imports are displayed with an *n/a* reference. This can happen
+when `checkglobals()` falsely ignores one or more imported functions
+from the given package or when the package is not actually needed as a
+dependency. In both cases this is useful information to have. In the
+above example, `tibble` is loaded in order to use `tribble()`, but the
+`tribble()` function is also exported by `dplyr`, so it shows up under
+the `dplyr` imports instead.
 
 ### Folders
 
@@ -99,7 +116,7 @@ following example scans an R-Shiny app folder containing a `ui.R` and
 `server.R` file (source:
 <https://github.com/rstudio/shiny-examples/tree/main/018-datatable-options>),
 
-<img src="man/figures/README/screen-3.svg" width="85%" style="display: block; margin: auto;" />
+<img src="man/figures/README/screen05.svg" width="85%" style="display: block; margin: auto;" />
 
 <br>
 
@@ -112,30 +129,32 @@ as unrecognized globals.
 
 ### R-packages
 
-R-packages can be scanned using the `pkg` argument in `checkglobals()`.
-Conceptually, `checkglobals()` scans all files in the R-folder and
-contrasts the detected (unrecognized) globals and imports against the
-imports listed in the NAMESPACE of the R-package. R-scripts present
-elsewhere in the R-package (i.e. not in the R-folder) are *not* scanned,
-as these are not coupled to the package NAMESPACE file. To illustrate,
-we can run `checkglobals()` on the checkglobals R-package folder itself:
+R-package folders can be scanned with the `pkg` argument in
+`checkglobals()`. Conceptually, `checkglobals()` scans all files in the
+`/R` folder of the package and contrasts the detected (unrecognized)
+globals and imports against the imports listed in the NAMESPACE file of
+the package. R-scripts present elsewhere in the package (e.g. in the
+`/inst` folder) are **not** analyzed, as these are not coupled to the
+package NAMESPACE file. To illustrate, we can run `checkglobals()` on
+its own package folder:
 
-<img src="man/figures/README/screen-4.svg" width="85%" style="display: block; margin: auto;" />
+<img src="man/figures/README/screen06.svg" width="85%" style="display: block; margin: auto;" />
 
 #### Bundled R-packages
 
 Instead of local R-package folders, the `pkg` argument also accepts file
-paths to bundled (tar.gz) R-packages. This can either be from a location
-on the local filesystem, or from a remote file location, such as the web
-(similar to the `file` argument).
+paths to bundled source R-packages (tar.gz). This can either be a tar.gz
+package on the local filesystem, or a remote file location, such as the
+web (similar to the `file` argument).
 
 ##### Local filesystem:
 
-<img src="man/figures/README/screen-5.svg" width="85%" style="display: block; margin: auto;" />
+<img src="man/figures/README/screen07.svg" width="85%" style="display: block; margin: auto;" />
 
 ##### Remote file location:
 
-<img src="man/figures/README/screen-6.svg" width="85%" style="display: block; margin: auto;" />
+<img src="man/figures/README/screen08a.svg" width="85%" style='margin-left:70px' style="display: block; margin: auto;" />
+<img src="man/figures/README/screen08b.svg" width="85%" style='margin-top:-20px;margin-left:70px' style="display: block; margin: auto;" />
 
 <br>
 
@@ -147,11 +166,10 @@ same as `checkglobals(dir = ".")`.
 
 ### Programmatic use
 
-Several methods are available to cast the S3-objects returned by
-`checkglobals()` to common R-objects. This can be useful for further
-programmatic use of the function output. The following methods are
-currently available: `as.data.frame()`, `as.matrix()`, `as.character()`
-and `as_vector()`.
+Several methods (e.g. `as.data.frame`, `as.matrix` or `as.character`)
+are available to cast the S3-objects returned by `checkglobals()` to
+common R-objects. This can be useful for further programmatic use of the
+returned output:
 
 ``` r
 chk <- checkglobals::checkglobals(pkg = "../checkglobals")
@@ -188,6 +206,95 @@ as.data.frame(chk)
 ## vector of package dependencies
 checkglobals::as_vector(chk)[["package"]]
 #> [1] "cli"   "knitr" "utils"
+```
+
+## Known limitations
+
+Below is a non-exhaustive list of known limitations of the static code
+analysis performed by `checkglobals()` to keep in mind for practical
+use. These are cases that are either too ambiguous or complex to be
+analyzed without evaluation of the code itself, where `checkglobals()`
+fails to recognize a variable name (false negative) or falsely detects a
+global variable when it should not (false positive).
+
+#### Character variable/function names
+
+``` r
+## this works (character arguments are recognized as functions)
+checkglobals(text = 'do.call(args = list(1), what = "median")')
+checkglobals(text = 'Map("g", 1, n = 1)')
+checkglobals(text = 'stats::aggregate(x ~ ., data = y, FUN = "g")')
+
+## this doesn't work (evaluation is required)
+checkglobals(text = 'g <- "f"; Map(g, 1, n = 1)')
+checkglobals(text = "eval(substitute(g))") ## same for ~, expression, quote, bquote, Quote, etc.
+```
+
+``` r
+## this works (calling a function in an exotic way)
+checkglobals(text = '"head"(1:10)')
+checkglobals(text = '`::`("utils", "head")(1:10)')
+checkglobals(text = 'list("function" = utils::head)$`function`(1:10)')
+
+## this doesn't work (evaluation is required)
+checkglobals(text = 'get("head")(1:10)')
+checkglobals(text = 'methods::getMethod("f", signature = "ANY")')
+```
+
+#### Package loading
+
+``` r
+## this works (simple evaluation of package names)
+checkglobals(text = 'attachNamespace("utils"); head(1:10)')
+checkglobals(text = 'pkg <- "utils"; library(pkg, character.only = TRUE); head(1:10)')
+
+## this doesn't work (more complex evaluation is required)
+checkglobals(text = 'pkg <- function() "utils"; library(pkg(), character.only = TRUE); head(1:10)')
+checkglobals(text = 'loadPkg <- library; loadPkg(utils)')
+checkglobals(text = 'box::use(utils[...])')
+```
+
+#### Unknown symbols
+
+``` r
+## this works (special functions self, private, super are recognized)
+checkglobals(text = 'R6::R6Class("cl",
+                   public = list(
+                     initialize = function(...) self$f(...),
+                     f = function(...) private$p
+                   ),
+                   private = list(
+                     p = list()
+                   ))')
+
+## this doesn't work (data masking)
+checkglobals(text = 'transform(mtcars, mpg2 = mpg^2)')
+checkglobals(text = 'attach(iris); print(Sepal.Width)')
+```
+
+#### Lazy evaluation
+
+``` r
+## this works (basic lazy evaluation)
+checkglobals(text = '{
+    addy <- function(y) x + y 
+    x <- 0
+    addy(1)
+}')
+checkglobals(
+  text = 'function() { 
+    on.exit(rm(x))
+    x <- 0 
+}')
+
+## this doesn't work (lazy evaluation in external functions)
+checkglobals(
+  text = 'server <- function(input, output) {
+    add1x <- shiny::reactive({
+      add1(input$x)
+    })
+    add1 <- function(x) x + 1  
+  }')
 ```
 
 ## Useful references
