@@ -474,7 +474,7 @@ as_sarif_json.checkglobals <- function(x, path, pattern, which = c("global", "im
 	lst <- jsonlite::read_json(path = system.file("extdata", "sarif.json", package = "checkglobals"), simplifyVector = FALSE)
 	run <- lst[["runs"]][[1]]
 	run[["invocations"]][[1]] <- list(
-			executionSuccessful = "true",
+			executionSuccessful = TRUE,
 			commandLine = paste0("checkglobals::", paste(deparse(attr(x, "call")), collapse = " ")),
 			workingDirectory = list(
 					uri = file.path("file:", "", prj_root)
@@ -614,7 +614,9 @@ result_imports_impl <- function(imports, srcref) {
 						ruleId = "CG04",
 						level = "none",
 						kind = "informational",
-						message = paste(pkginfo[[pkg]], paste(paste0("   \u2022", funsplit[[pkg]]), collapse = "\n"), sep = "\n"),
+						message = list(
+								text = paste(pkginfo[[pkg]], paste(paste0("   \u2022", funsplit[[pkg]]), collapse = "\n"), sep = "\n")
+						),
 						locations = list()
 				)
 			})
