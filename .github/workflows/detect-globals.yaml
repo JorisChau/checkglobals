@@ -1,8 +1,14 @@
 on:
   push:
-    branches: [develop]
+    branches: 
+      - main
+      - master
+      - develop
   pull_request:
-    branches: [develop]
+    branches:
+      - main
+      - master
+      - develop
   workflow_dispatch:
 
 name: detect-globals
@@ -21,7 +27,7 @@ jobs:
           use-public-rspm: true
       - uses: r-lib/actions/setup-r-dependencies@v2
       - name: install checkglobals
-        run: pak::install()
+        run: pak::local_install()
         shell: Rscript {0}
       - name: run checkglobals
         id: checkglobals
