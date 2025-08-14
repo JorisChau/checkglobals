@@ -112,6 +112,7 @@ if(isTRUE(dir.create(pkgdir)) && isTRUE(file.copy(dirname(rdir), pkgdir, recursi
 }
 
 ## check methods
+tmpjson <- tempfile(fileext = ".json", tmpdir = tmpdir)
 check8.1 <- as_vector(check5.1, pattern = "g")
 check8.2 <- as_vector(check5.1$globals)
 check8.3 <- as_vector(check5.1$imports, sorted = FALSE)  ## sorting depends on locale
@@ -123,6 +124,8 @@ check8.8 <- as.character(check5.1$globals)
 check8.9 <- as.character(check5.1$imports, sorted = FALSE)
 check8.10 <- as.data.frame(check5.1$imports, sorted = FALSE)
 check8.11 <- as.data.frame(check5.1$imports, pattern = "zzz")
+check8.12 <- as_sarif_json(check5.1)
+check8.13 <- as_sarif_json(check5.1, path = tmpjson)
 
 dotest("8.1", check8.1, list(global = "g", import = c("aggregate", "getMethod", "globalVariables"), package = c("methods", "stats", "utils")))
 dotest("8.2", check8.2, list(global = c("%>%", "fAttach2", "fLoad2", "g")))
@@ -157,6 +160,8 @@ dotest("8.8", unname(check8.8), check8.2[["global"]])
 dotest("8.9", unname(check8.9), check8.3[["import"]])
 dotest("8.10", check8.10, check8.5)
 dotest("8.11", check8.11, structure(list(name = character(0), package = character(0), type = character(0)), class = "data.frame", row.names = integer(0)))
+dotest("8.12", inherits(check8.12, "json"), TRUE)
+dotest("8.13", file.info(check8.13)$size > 0, TRUE)
 
 ## errors
 tools::assertError(check_source())
