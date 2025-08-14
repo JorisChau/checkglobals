@@ -21,3 +21,4 @@ README.Rmd
 .vscode
 checkglobals.Rproj
 /docker/
+checkglobals.Rcheck

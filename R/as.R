@@ -374,6 +374,7 @@ as_vector.checkglobalsi <- function(x, pattern, ...) {
 #' for consumption by external CI tools (e.g. GitHub Code Scanning, Azure DevOps, Jenkins Next Generation Warnings plugin).
 #' The function invokes particular \emph{methods} which depend on the \code{\link{class}} of the first argument.
 #' @param x an S3-object to convert.
+#' @param path file path to write the SARIF json content to.
 #' @param pattern an optional \link{regular expression}.  Only names
 #' matching \code{pattern} are returned. \code{\link{glob2rx}} can be
 #' used to convert wildcard patterns to regular expressions.
@@ -382,7 +383,7 @@ as_vector.checkglobalsi <- function(x, pattern, ...) {
 #' @param ... additional arguments to configure the returned output.
 #' @return json object.
 #' @export
-as_sarif_json <- function(x, pattern, which, ...) {
+as_sarif_json <- function(x, path, pattern, which, ...) {
 	UseMethod("as_sarif_json")
 }
 

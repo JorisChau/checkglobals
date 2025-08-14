@@ -4,10 +4,12 @@
 \alias{as_sarif_json}
 \title{Cast to SARIF json}
 \usage{
-as_sarif_json(x, pattern, which, ...)
+as_sarif_json(x, path, pattern, which, ...)
 }
 \arguments{
 \item{x}{an S3-object to convert.}
+
+\item{path}{file path to write the SARIF json content to.}
 
 \item{pattern}{an optional \link{regular expression}.  Only names
 matching \code{pattern} are returned. \code{\link{glob2rx}} can be

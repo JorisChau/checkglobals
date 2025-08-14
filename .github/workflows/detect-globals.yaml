@@ -1,0 +1,40 @@
+on:
+  workflow_dispatch:
+    inputs:
+      pkg_root:
+        description: 'R-package root directory'
+        required: true
+        type: string
+        default: '.'
+
+name: detect-globals
+
+jobs:
+  test-coverage:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: 'release'
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+      - name: install checkglobals
+        run: pak::install()
+        shell: Rscript {0}
+      - name: run checkglobals
+        id: checkglobals
+        run: |
+          chk <- checkglobals::checkglobals(pkg = Sys.getenv("PKG_ROOT"))
+          path <- as_sarif_json(chk, path = file.path(Sys.getenv("GITHUB_WORKSPACE"), "checkglobals.json")) 
+          cat("path=", path, "\n", file = Sys.getenv("GITHUB_OUTPUT"), sep = "", append = TRUE)
+        shell: Rscript {0}
+        env:
+          PKG_ROOT: ${{ inputs.pkg_root }}
+      - name: upload sarif
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ steps.checkglobals.outputs.path }}
