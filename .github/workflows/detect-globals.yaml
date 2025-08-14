@@ -16,6 +16,10 @@ name: detect-globals
 jobs:
   detect-globals:
     runs-on: ubuntu-latest
+    permissions:
+      actions: read   
+      contents: read
+      security-events: write 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
