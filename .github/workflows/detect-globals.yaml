@@ -4,7 +4,7 @@ on:
 name: detect-globals
 
 jobs:
-  test-coverage:
+  detect-globals:
     runs-on: ubuntu-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -23,7 +23,7 @@ jobs:
         id: checkglobals
         run: |
           chk <- checkglobals::checkglobals()
-          path <- as_sarif_json(chk, path = file.path(Sys.getenv("GITHUB_WORKSPACE"), "checkglobals.json")) 
+          path <- checkglobals::as_sarif_json(chk, path = file.path(Sys.getenv("GITHUB_WORKSPACE"), "checkglobals.json")) 
           cat("path=", path, "\n", file = Sys.getenv("GITHUB_OUTPUT"), sep = "", append = TRUE)
         shell: Rscript {0}
       - name: upload sarif
