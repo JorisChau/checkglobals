@@ -30,6 +30,9 @@ jobs:
           r-version: 'release'
           use-public-rspm: true
       - uses: r-lib/actions/setup-r-dependencies@v2
+      - name: install checkglobals
+        run: pak::local_install()
+        shell: Rscript {0}
       - name: run checkglobals
         id: checkglobals
         run: |
