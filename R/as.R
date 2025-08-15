@@ -478,19 +478,9 @@ as_sarif_json.checkglobals <- function(x, path, pattern, which = c("global", "im
 		}
 	}
 	
-	## populate template
+	## add results to template
 	lst <- jsonlite::read_json(path = system.file("extdata", "sarif.json", package = "checkglobals"), simplifyVector = FALSE)
-	run <- lst[["runs"]][[1]]
-	run[["invocations"]][[1]] <- list(
-			executionSuccessful = TRUE,
-			commandLine = paste0("checkglobals::", paste(deparse(attr(x, "call")), collapse = " ")),
-			workingDirectory = list(
-					uri = file.path("file:", "", prj_root)
-			)
-	)
-	run[["originalUriBaseIds"]][["PROJECTROOT"]][["uri"]] <- file.path("file:", "", prj_root)
-	run[["results"]] <- results
-	lst[["runs"]][[1]] <- run
+	lst[["runs"]][[1]][["results"]] <- results
 	
 	if(missing(path)) {
 		res <- jsonlite::toJSON(lst, pretty = pretty, auto_unbox = TRUE)
