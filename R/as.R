@@ -631,7 +631,7 @@ result_imports_impl <- function(imports, srcref, prj_root) {
 						message = list(
 								text = paste(pkginfo[[pkg]], paste(paste0("   \u2022", funlist[[pkg]]), collapse = "\n"), sep = "\n")
 						),
-						locations = unname(loclist[pkg])
+						locations = loclist[[pkg]]
 				)
 			})
 	return(res)
