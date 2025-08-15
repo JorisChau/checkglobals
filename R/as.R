@@ -397,6 +397,8 @@ as_sarif_json <- function(x, path, pattern, which, ...) {
 #' \item \code{all.names}, a logical value. If \code{TRUE}, all object names are returned.
 #' If \code{FALSE}, names which begin with a \samp{.} are omitted. Defaults to \code{TRUE}.
 #' \item \code{pretty}, a logical value passed to \code{jsonlite::toJSON}. Defaults to \code{TRUE}.
+#' \item \code{use_cli}, a logical value indicating if \code{cli} should be used to format the result messages.
+#' Defaults to \code{TRUE}, which means that \code{cli}-formatting is attempted if \code{cli} is installed.
 #' }
 #' @return if \code{path} is provided writes the SARIF json content to \code{path} and 
 #' returns the \code{path} invisibly, otherwise returns the full SARIF json object.
@@ -419,6 +421,7 @@ as_sarif_json.checkglobals <- function(x, path, pattern, which = c("global", "im
 	dots <- list(...)
 	all.names <- dots$all.names %||% TRUE
 	pretty <- dots$all.names %||% TRUE
+	use_cli <- dots$use_cli %||% requireNamespace("cli", quietly = TRUE)
 	prj_root <- normalizePath(attr(x, "call")[[2]])
 	if(!file.info(prj_root)$isdir) {
 		uri_path <- basename(prj_root)
@@ -465,8 +468,8 @@ as_sarif_json.checkglobals <- function(x, path, pattern, which = c("global", "im
 			if(length(imports)) {
 				imports <- sort(imports)
 				srcref_imports <- x$imports$srcref[names(imports)]
-				results_imports <- result_imports_impl(imports, srcref_imports, prj_root)
-				results <- c(results, results_imports)
+				result_imports <- result_imports_impl(imports, srcref_imports, prj_root, use_cli)
+				results <- c(results, list(result_imports))
 			}
 			if(length(loaded_pkgs)) {
 				if(!exists("uri", mode = "character", inherits = FALSE)) {
@@ -491,7 +494,7 @@ as_sarif_json.checkglobals <- function(x, path, pattern, which = c("global", "im
 	}	
 }
 
-result_missing_pkg_impl <- function(pkg, uri = "GLOBAL") {
+result_missing_pkg_impl <- function(pkg, uri) {
 	return(
 			list(
 					ruleId = "CG02",
@@ -514,7 +517,7 @@ result_missing_pkg_impl <- function(pkg, uri = "GLOBAL") {
 	)
 }
 
-result_unused_pkg_impl <- function(pkg, uri = "GLOBAL") {
+result_unused_pkg_impl <- function(pkg, uri) {
 	return(
 			list(
 					ruleId = "CG03",
@@ -573,13 +576,13 @@ result_global_impl <- function(global, srcref, prj_root) {
 	)
 }
 
-result_imports_impl <- function(imports, srcref, prj_root) {
+result_imports_impl <- function(imports, srcref, prj_root, use_cli) {
 	
-	funinfo <- fmt_align(list(names(imports), fmt_srcref(srcref, FALSE)), use_cli = FALSE)
+	funinfo <- fmt_align(list(names(imports), fmt_srcref(srcref, FALSE)), use_cli = use_cli)
 	funsplit <- split(names(imports), f = imports)
 	
 	mw <- max(nchar(names(funsplit)))
-	pkginfo <- trimws(fmt_align(list(names(funsplit), fmt_count(funsplit, srcref, use_cli = FALSE)), mw + 2, FALSE), which = "left")
+	pkginfo <- fmt_align(list(names(funsplit), fmt_count(funsplit, srcref, use_cli = use_cli)), mw + 2, use_cli = use_cli)
 	
 	if(any(duplicated(c(names(funsplit), names(imports))))) {
 		funnms <- make.unique(c(names(funsplit), names(imports)))
@@ -591,40 +594,54 @@ result_imports_impl <- function(imports, srcref, prj_root) {
 	funlist <- utils::relist(funinfo, funsplit)
 	names(pkginfo) <- names(funlist)
 	
-	locations <- lapply(srcref, function(src) {
-				if(inherits(src[[1]], "srcref")) {
-					src1 <- src[[1]]
-					srcfile <- attr(src1, "srcfile")
-					list(
-							physicalLocation = list(
-									artifactLocation = list(
-											uri = rel_path(srcfile$filename, prj_root)
-									),
-									region = list(
-											startLine = src1[1],
-											startColumn = ifelse(length(src1) > 4, src1[5], src1[2]),
-											endLine = src1[3],
-											endColumn = ifelse(length(src1) > 4, src1[6], src1[4])
-									)
-							)
-					)	
-				}
-			})
-	loclist <- utils::relist(locations, funsplit)
 	
-	res <- lapply(
-			names(funsplit), function(pkg) {
-				list(
-						ruleId = "CG04",
-						level = "none",
-						kind = "informational",
-						message = list(
-								text = paste(pkginfo[[pkg]], paste(paste0("   \u2022", funlist[[pkg]]), collapse = "\n"), sep = "\n")
-						),
-						locations = loclist[[pkg]]
-				)
-			})
-	return(res)
+	funsplit <- split(names(imports), f = imports)
+	if(use_cli) {
+		mw <- max(cli::ansi_nchar(names(funsplit), "width"))
+		pkginfo <- fmt_align(list(cli::style_bold(names(funsplit)), fmt_count(funsplit, srcref, use_cli = use_cli)), mw + 2, use_cli)
+	} else {
+		mw <- max(nchar(names(funsplit)))
+		pkginfo <- fmt_align(list(names(funsplit), fmt_count(funsplit, srcref, use_cli = use_cli)), mw + 2, use_cli)
+	}
+	if(any(duplicated(c(names(funsplit), names(imports))))) {
+		funnms <- make.unique(c(names(funsplit), names(imports)))
+		funsplit <- utils::relist(funnms[-c(1:length(funsplit))], funsplit)
+	} else {
+		funnms <- c(names(funsplit), names(imports))
+	}
+	if(use_cli) {
+		nodes <- data.frame(
+				pkg = funnms,
+				fun = I(c(funsplit, replicate(length(imports), character(0)))),
+				info = c(pkginfo, funinfo),
+				stringsAsFactors = FALSE
+		)
+		msgs <- lapply(names(funsplit), function(root) paste(cli::tree(nodes, root = root), collapse = "\n"))
+	} else {
+		funsplit <- utils::relist(funinfo, funsplit)
+		names(pkginfo) <- names(funsplit)
+		msgs <- lapply(names(funsplit), function(pkg) paste(pkginfo[[pkg]], paste(paste0("   \u2022", funsplit[[pkg]]), collapse = "\n"), sep = "\n"))
+	}
+	result <- list(
+			ruleId = "CG04",
+			level = "none",
+			kind = "informational",
+			message = list(
+					text = do.call(paste, args = c(msgs, list(sep = "\n")))
+			),
+			locations =  list(
+					physicalLocation = list(
+							artifactLocation = list(
+									uri = "GLOBAL"
+							),
+							region = list(
+									startLine = 1,
+									startColumn = 1
+							)
+					)
+			)
+	)
+	return(result)
 }
 
 rel_path <- function(path, root) {
