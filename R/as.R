@@ -503,13 +503,15 @@ result_missing_pkg_impl <- function(pkg, uri) {
 							text = sprintf("Package '%s' is required but not installed", pkg)
 					),
 					locations = list(
-							physicalLocation = list(
-									artifactLocation = list(
-											uri = uri
-									),
-									region = list(
-											startLine = 1L,
-											startColumns = 1L
+							list(
+									physicalLocation = list(
+											artifactLocation = list(
+													uri = uri
+											),
+											region = list(
+													startLine = 1L,
+													startColumns = 1L
+											)
 									)
 							)
 					)
@@ -526,13 +528,15 @@ result_unused_pkg_impl <- function(pkg, uri) {
 							text = sprintf("Package '%s' is loaded or imported but not used", pkg)
 					),
 					locations = list(
-							physicalLocation = list(
-									artifactLocation = list(
-											uri = uri
-									),
-									region = list(
-											startLine = 1L,
-											startColumns = 1L
+							list(
+									physicalLocation = list(
+											artifactLocation = list(
+													uri = uri
+											),
+											region = list(
+													startLine = 1L,
+													startColumns = 1L
+											)
 									)
 							)
 					)
@@ -630,13 +634,15 @@ result_imports_impl <- function(imports, srcref, prj_root, use_cli) {
 					text = do.call(paste, args = c(msgs, list(sep = "\n")))
 			),
 			locations =  list(
-					physicalLocation = list(
-							artifactLocation = list(
-									uri = "GLOBAL"
-							),
-							region = list(
-									startLine = 1,
-									startColumn = 1
+					list(
+							physicalLocation = list(
+									artifactLocation = list(
+											uri = "GLOBAL"
+									),
+									region = list(
+											startLine = 1,
+											startColumn = 1
+									)
 							)
 					)
 			)
