@@ -413,18 +413,24 @@ as_sarif_json <- function(x, path, pattern, which, ...) {
 as_sarif_json.checkglobals <- function(x, path, pattern, which = c("global", "import"), ...) {
 	stopifnot(
 			"jsonlite must be installed to cast to a SARIF json file." = 
-			is.element("jsonlite", rownames(utils::installed.packages()))
+					is.element("jsonlite", rownames(utils::installed.packages()))
 	)
 	which <- match.arg(which, c("global", "import"), several.ok = TRUE)
 	dots <- list(...)
 	all.names <- dots$all.names %||% TRUE
 	pretty <- dots$all.names %||% TRUE
-	prj_root <- attr(x, "call")[[2]]
+	prj_root <- normalizePath(attr(x, "call")[[2]])
+	if(!file.info(prj_root)$isdir) {
+		uri_path <- basename(prj_root)
+		prj_root <- dirname(prj_root)
+	} else {
+		uri_path <- list.files(prj_root, include.dirs = TRUE)
+	}
 	results <- list()
 	
 	## missing packages
 	if(length(x$missing_pkgs)) {
-		uri <- ifelse(is.element("NAMESPACE", list.files(prj_root)), "NAMESPACE", "GLOBAL")
+		uri <- resolve_uri_path(x, prj_root, uri_path, "NAMESPACE")
 		results_pkg <- lapply(x$missing_pkgs, result_missing_pkg_impl, uri = uri)
 		results <- c(results, results_pkg)
 	} 
@@ -459,11 +465,13 @@ as_sarif_json.checkglobals <- function(x, path, pattern, which = c("global", "im
 			if(length(imports)) {
 				imports <- sort(imports)
 				srcref_imports <- x$imports$srcref[names(imports)]
-				results_imports <- result_imports_impl(imports, srcref_imports)
+				results_imports <- result_imports_impl(imports, srcref_imports, prj_root)
 				results <- c(results, results_imports)
 			}
 			if(length(loaded_pkgs)) {
-				uri <- ifelse(is.element("NAMESPACE", list.files(prj_root)), "NAMESPACE", "GLOBAL")
+				if(!exists("uri", mode = "character", inherits = FALSE)) {
+					uri <- resolve_uri_path(x, prj_root, uri_path, "NAMESPACE")
+				}
 				results_unused <- lapply(loaded_pkgs, result_unused_pkg_impl, uri = uri)
 				results <- c(results, results_unused)
 			}
@@ -491,21 +499,6 @@ as_sarif_json.checkglobals <- function(x, path, pattern, which = c("global", "im
 		jsonlite::write_json(lst, path = path, pretty = pretty, auto_unbox = TRUE)
 		return(invisible(path))
 	}	
-}
-
-rel_path <- function(path, root) {
-	root <- normalizePath(root)
-	rel <- basename(path)
-	dir_path <- dirname(path)
-	while(!identical(dir_path, root) && nchar(dir_path) > 1) {
-		rel <- file.path(basename(dir_path), rel)
-		dir_path <- dirname(dir_path)
-	}
-	if(nchar(dir_path) > 1) {
-		return(rel)
-	} else {
-		return(path)
-	}
 }
 
 result_missing_pkg_impl <- function(pkg, uri = "GLOBAL") {
@@ -590,13 +583,13 @@ result_global_impl <- function(global, srcref, prj_root) {
 	)
 }
 
-result_imports_impl <- function(imports, srcref) {
+result_imports_impl <- function(imports, srcref, prj_root) {
 	
 	funinfo <- fmt_align(list(names(imports), fmt_srcref(srcref, FALSE)), use_cli = FALSE)
 	funsplit <- split(names(imports), f = imports)
 	
 	mw <- max(nchar(names(funsplit)))
-	pkginfo <- fmt_align(list(names(funsplit), fmt_count(funsplit, srcref, use_cli = FALSE)), mw + 2, FALSE)
+	pkginfo <- trimws(fmt_align(list(names(funsplit), fmt_count(funsplit, srcref, use_cli = FALSE)), mw + 2, FALSE), which = "left")
 	
 	if(any(duplicated(c(names(funsplit), names(imports))))) {
 		funnms <- make.unique(c(names(funsplit), names(imports)))
@@ -605,8 +598,29 @@ result_imports_impl <- function(imports, srcref) {
 		funnms <- c(names(funsplit), names(imports))
 	}
 	
-	funsplit <- utils::relist(funinfo, funsplit)
-	names(pkginfo) <- names(funsplit)
+	funlist <- utils::relist(funinfo, funsplit)
+	names(pkginfo) <- names(funlist)
+	
+	locations <- lapply(srcref, function(src) {
+				if(inherits(src[[1]], "srcref")) {
+					src1 <- src[[1]]
+					srcfile <- attr(src1, "srcfile")
+					list(
+							physicalLocation = list(
+									artifactLocation = list(
+											uri = rel_path(srcfile$filename, prj_root)
+									),
+									region = list(
+											startLine = src1[1],
+											startColumn = ifelse(length(src1) > 4, src1[5], src1[2]),
+											endLine = src1[3],
+											endColumn = ifelse(length(src1) > 4, src1[6], src1[4])
+									)
+							)
+					)	
+				}
+			})
+	loclist <- utils::relist(locations, funsplit)
 	
 	res <- lapply(
 			names(funsplit), function(pkg) {
@@ -615,10 +629,41 @@ result_imports_impl <- function(imports, srcref) {
 						level = "none",
 						kind = "informational",
 						message = list(
-								text = paste(pkginfo[[pkg]], paste(paste0("   \u2022", funsplit[[pkg]]), collapse = "\n"), sep = "\n")
+								text = paste(pkginfo[[pkg]], paste(paste0("   \u2022", funlist[[pkg]]), collapse = "\n"), sep = "\n")
 						),
-						locations = list()
+						locations = unname(loclist[pkg])
 				)
 			})
 	return(res)
+}
+
+rel_path <- function(path, root) {
+	root <- normalizePath(root)
+	rel <- basename(path)
+	dir_path <- dirname(path)
+	while(!identical(dir_path, root) && nchar(dir_path) > 1) {
+		rel <- file.path(basename(dir_path), rel)
+		dir_path <- dirname(dir_path)
+	}
+	if(nchar(dir_path) > 1) {
+		return(rel)
+	} else {
+		return(path)
+	}
+}
+
+resolve_uri_path <- function(x, root, files, target) {
+	## not a directory
+	if(identical(length(files), 1L) && !file.info(file.path(root, files))$isdir) {
+		return(files)
+	} else {
+		## target found
+		if(is.element(target, files)) {
+			return(target)
+		} else {  ## placeholder
+			srcfile <- attr(x$imports$srcref[[1]][[1]], "srcfile")
+			file <- rel_path(srcfile$filename, root)
+			return(file)
+		}
+	}
 }
