@@ -510,7 +510,7 @@ result_missing_pkg_impl <- function(pkg, uri) {
 											),
 											region = list(
 													startLine = 1L,
-													startColumns = 1L
+													startColumn = 1L
 											)
 									)
 							)
@@ -535,7 +535,7 @@ result_unused_pkg_impl <- function(pkg, uri) {
 											),
 											region = list(
 													startLine = 1L,
-													startColumns = 1L
+													startColumn = 1L
 											)
 									)
 							)
