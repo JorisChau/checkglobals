@@ -396,9 +396,11 @@ as_sarif_json <- function(x, path, pattern, which, ...) {
 #' \itemize{
 #' \item \code{all.names}, a logical value. If \code{TRUE}, all object names are returned.
 #' If \code{FALSE}, names which begin with a \samp{.} are omitted. Defaults to \code{TRUE}.
-#' \item \code{pretty}, a logical value passed to \code{jsonlite::toJSON}. Defaults to \code{TRUE}.
+#' \item \code{pretty}, a logical value passed to \code{jsonlite::toJSON}. Defaults to \code{FALSE}.
 #' \item \code{root_dir}, directory to use as root with repect to which all result uri's are 
 #' included as relative paths.
+#' \item \code{use_cli}, a logical value indicating if \code{cli} should be used to format the result messages.
+#' Defaults to \code{TRUE}, which means that \code{cli}-formatting is attempted if \code{cli} is installed.
 #' }
 #' @return if \code{path} is provided writes the SARIF json content to \code{path} and 
 #' returns the \code{path} invisibly, otherwise returns the full SARIF json object.
@@ -418,11 +420,13 @@ as_sarif_json.checkglobals <- function(x, path, pattern, which = c("global", "im
 					is.element("jsonlite", rownames(utils::installed.packages()))
 	)
 	which <- match.arg(which, c("global", "import"), several.ok = TRUE)
+	use_cli <- requireNamespace("cli", quietly = TRUE)
 	dots <- list(...)
 	all.names <- dots$all.names %||% TRUE
-	pretty <- dots$all.names %||% TRUE
+	pretty <- dots$pretty %||% FALSE
 	call_path <- normalizePath(attr(x, "call")[[2]])
 	uri_root <- dots$root_dir %||% call_path
+	use_cli <- dots$use_cli %||% requireNamespace("cli", quietly = TRUE)
 	
 	if(!file.info(uri_root)$isdir) {
 		path_files <- basename(uri_root)
@@ -472,17 +476,27 @@ as_sarif_json.checkglobals <- function(x, path, pattern, which = c("global", "im
 				imports <- importslist <- NULL
 			}
 			if(length(imports)) {
+				if(!exists("uri", mode = "character", inherits = FALSE)) {
+					uri <- resolve_uri_path(x, uri_root, path_files, "DESCRIPTION")
+					if(identical(basename(uri), "DESCRIPTION")) {
+						endLine <- tryCatch(length(readLines(file.path(uri_root, uri))), error = function(e) 1L)
+					} else {
+						endLine <- 1L
+					}
+				}
 				imports <- sort(imports)
 				srcref_imports <- x$imports$srcref[names(imports)]
-				result_imports <- result_imports_impl(imports, srcref_imports)
+				result_imports <- result_imports_impl(imports, srcref_imports, uri, endLine, use_cli)
 				results <- c(results, list(result_imports))
 			}
 			if(length(loaded_pkgs)) {
-				uri <- resolve_uri_path(x, uri_root, path_files, "NAMESPACE")
-				if(identical(basename(uri), "NAMESPACE")) {
-					endLine <- tryCatch(length(readLines(file.path(uri_root, uri))), error = function(e) 1L)
-				} else {
-					endLine <- 1L
+				if(!exists("uri", mode = "character", inherits = FALSE)) {
+					uri <- resolve_uri_path(x, uri_root, path_files, "DESCRIPTION")
+					if(identical(basename(uri), "DESCRIPTION")) {
+						endLine <- tryCatch(length(readLines(file.path(uri_root, uri))), error = function(e) 1L)
+					} else {
+						endLine <- 1L
+					}
 				}
 				results_unused <- lapply(loaded_pkgs, result_unused_pkg_impl, uri = uri, endLine = endLine)
 				results <- c(results, results_unused)
@@ -504,12 +518,14 @@ as_sarif_json.checkglobals <- function(x, path, pattern, which = c("global", "im
 }
 
 result_missing_pkg_impl <- function(pkg, uri, endLine = 1L) {
+	msg <- sprintf("Package **'%s'** is required but not installed", pkg)
 	return(
 			list(
 					ruleId = "CG02",
 					level = "note",
 					message = list(
-							text = sprintf("Package '%s' is required but not installed", pkg)
+							markdown = msg,
+							text = gsub("\\*", "", msg)
 					),
 					locations = list(
 							list(
@@ -520,7 +536,7 @@ result_missing_pkg_impl <- function(pkg, uri, endLine = 1L) {
 											region = list(
 													startLine = 1L,
 													endLine = endLine
-													
+											
 											)
 									)
 							)
@@ -530,12 +546,14 @@ result_missing_pkg_impl <- function(pkg, uri, endLine = 1L) {
 }
 
 result_unused_pkg_impl <- function(pkg, uri, endLine = 1L) {
+	msg <-  sprintf("Package **'%s'** is loaded or imported but not used", pkg)
 	return(
 			list(
 					ruleId = "CG03",
 					level = "note",
 					message = list(
-							text = sprintf("Package '%s' is loaded or imported but not used", pkg)
+							markdown = msg,
+							text = gsub("\\*", "", msg)
 					),
 					locations = list(
 							list(
@@ -575,69 +593,70 @@ result_global_impl <- function(global, srcref, prj_root) {
 			})
 	refs <- fmt_srcref(list(srcref), use_cli = FALSE)
 	if(nzchar(refs)) {
-		refs <- sprintf(" at %s", refs)
+		refs <- sprintf(" at *%s*", refs)
 	}
+	msg <- sprintf("Unrecognized global %s **'%s%s'**%s", global, names(global), 
+			ifelse(global == "function", "()", ""), refs)
 	return(
 			list(
 					ruleId = "CG01",
 					level = "note",
 					message = list(
-							text = sprintf("Unrecognized global %s '%s%s'%s", global, names(global), 
-									ifelse(global == "function", "()", ""), refs)
+							markdown = msg,
+							text = gsub("\\*", "", msg)
 					),
 					locations = locations
 			)
 	)
 }
 
-result_imports_impl <- function(imports, srcref) {
+result_imports_impl <- function(imports, srcref, uri, endLine = 1L, use_cli = FALSE) {
 	
-	funinfo <- fmt_align(list(names(imports), fmt_srcref(srcref, FALSE)), use_cli = FALSE)
+	funinfo <- fmt_align(list(names(imports), sprintf("*%s*", fmt_srcref(srcref, FALSE))), use_cli = FALSE)
 	funsplit <- split(names(imports), f = imports)
-	
 	mw <- max(nchar(names(funsplit)))
-	pkginfo <- fmt_align(list(names(funsplit), fmt_count(funsplit, srcref, use_cli = FALSE)), mw + 2, FALSE)
-	
+	pkgnms <- sprintf("**%s**", names(funsplit))
+	pkginfo <- trimws(fmt_align(list(pkgnms, fmt_count(funsplit, srcref, use_cli = FALSE)), mw + 2, FALSE), which = "left")
 	if(any(duplicated(c(names(funsplit), names(imports))))) {
 		funnms <- make.unique(c(names(funsplit), names(imports)))
 		funsplit <- utils::relist(funnms[-c(1:length(funsplit))], funsplit)
 	} else {
 		funnms <- c(names(funsplit), names(imports))
 	}
-	
-	funlist <- utils::relist(funinfo, funsplit)
-	names(pkginfo) <- names(funlist)
-	
-	funsplit <- split(names(imports), f = imports)
-	mw <- max(nchar(names(funsplit)))
-	pkginfo <- fmt_align(list(names(funsplit), fmt_count(funsplit, srcref, use_cli = FALSE)), mw + 2, FALSE)
-	if(any(duplicated(c(names(funsplit), names(imports))))) {
-		funnms <- make.unique(c(names(funsplit), names(imports)))
-		funsplit <- utils::relist(funnms[-c(1:length(funsplit))], funsplit)
+	if(use_cli) {
+		nodes <- data.frame(
+				pkg = funnms,
+				fun = I(c(funsplit, replicate(length(imports), character(0)))),
+				info = c(pkginfo, funinfo),
+				stringsAsFactors = FALSE
+		)
+		msgs <- lapply(names(funsplit), function(root) paste(cli::tree(nodes, root = root), collapse = "\n"))
+		msgs <- do.call(paste, args = c(msgs, list(sep = "\n")))
 	} else {
-		funnms <- c(names(funsplit), names(imports))
+		funsplit <- utils::relist(funinfo, funsplit)
+		names(pkginfo) <- names(funsplit)
+		msgs <- lapply(names(funsplit), function(pkg) {
+					paste(pkginfo[[pkg]], paste(paste0("\u00A0\u00A0\u2022", funsplit[[pkg]]), collapse = "\n\u00A0"), sep = "\n\u00A0")
+				})
+		msgs <- do.call(paste, args = c(msgs, list(sep = "\n")))
 	}
-	funsplit <- utils::relist(funinfo, funsplit)
-	names(pkginfo) <- names(funsplit)
-	msgs <- lapply(names(funsplit), function(pkg) {
-				paste(pkginfo[[pkg]], paste(paste0("   \u2022", funsplit[[pkg]]), collapse = "\n "), sep = "\n ")
-			})
 	result <- list(
 			ruleId = "CG04",
 			level = "none",
 			kind = "informational",
 			message = list(
-					text = do.call(paste, args = c(msgs, list(sep = "\n")))
+					markdown = msgs,
+					text = gsub("\\*", "", msgs)
 			),
 			locations =  list(
 					list(
 							physicalLocation = list(
 									artifactLocation = list(
-											uri = "GLOBAL"
+											uri = uri
 									),
 									region = list(
 											startLine = 1,
-											startColumn = 1
+											startColumn = endLine
 									)
 							)
 					)
