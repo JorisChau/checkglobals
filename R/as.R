@@ -412,7 +412,7 @@ as_sarif_json <- function(x, path, pattern, which, ...) {
 #'     package = "checkglobals"
 #'   )
 #' )
-#' json <- as_sarif_json(chk)
+#' json <- as_sarif_json(chk, pretty = TRUE)
 #' @export
 as_sarif_json.checkglobals <- function(x, path, pattern, which = c("global", "import"), ...) {
 	stopifnot(
@@ -424,7 +424,7 @@ as_sarif_json.checkglobals <- function(x, path, pattern, which = c("global", "im
 	dots <- list(...)
 	all.names <- dots$all.names %||% TRUE
 	pretty <- dots$pretty %||% FALSE
-	call_path <- normalizePath(attr(x, "call")[[2]])
+	call_path <- normalizePath(attr(x, "call")[[2]], winslash = "/", mustWork = FALSE)
 	uri_root <- dots$root_dir %||% call_path
 	use_cli <- dots$use_cli %||% requireNamespace("cli", quietly = TRUE)
 	
@@ -667,14 +667,16 @@ result_imports_impl <- function(imports, srcref, uri, endLine = 1L, use_cli = FA
 }
 
 rel_path <- function(path, root) {
-	root <- normalizePath(root)
+	root <- normalizePath(root, winslash = "/", mustWork = FALSE)
 	rel <- basename(path)
 	dir_path <- dirname(path[1])
-	while(!identical(dir_path, root) && nchar(dir_path) > 1) {
+	dir_path0 <- NA_character_
+	while(!identical(dir_path, root) && !identical(dir_path, dir_path0)) {
+		dir_path0 <- dir_path
 		rel <- file.path(basename(dir_path), rel)
 		dir_path <- dirname(dir_path)
 	}
-	if(nchar(dir_path) > 1) {
+	if(!identical(dir_path, dir_path0)) {
 		return(rel)
 	} else {
 		return(path)

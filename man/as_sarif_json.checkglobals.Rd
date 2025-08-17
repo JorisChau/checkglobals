@@ -45,5 +45,5 @@ chk <- checkglobals(
     package = "checkglobals"
   )
 )
-json <- as_sarif_json(chk)
+json <- as_sarif_json(chk, pretty = TRUE)
 }
