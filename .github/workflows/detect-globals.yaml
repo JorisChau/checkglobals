@@ -35,18 +35,14 @@ jobs:
       - name: run checkglobals
         id: checkglobals
         run: |
-          pkg_root <- file.path(Sys.getenv("GITHUB_WORKSPACE"), "inst", "unit_tests", "pkg", "testpkg")
-          (chk <- checkglobals::checkglobals(pkg = pkg_root))
-          path <- checkglobals::as_sarif_json(
+          (chk <- checkglobals::checkglobals(pkg = "."))
+          checkglobals::as_sarif_json(
                     chk, 
                     path = file.path(Sys.getenv("GITHUB_WORKSPACE"), "checkglobals.json"),
-                    root_dir = Sys.getenv("GITHUB_WORKSPACE"),
-                    use_cli = FALSE
+                    root_dir = Sys.getenv("GITHUB_WORKSPACE")
           )
-          cat("path=", path, "\n", file = Sys.getenv("GITHUB_OUTPUT"), sep = "", append = TRUE)
         shell: Rscript {0}
       - name: upload sarif
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: ${{ steps.checkglobals.outputs.path }}
-          checkout_path: ${{ github.workspace }}
+          sarif_file: ${{ github.workspace }}/checkglobals.json
