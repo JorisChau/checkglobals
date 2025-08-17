@@ -36,11 +36,12 @@ jobs:
         id: checkglobals
         run: |
           pkg_root <- file.path(Sys.getenv("GITHUB_WORKSPACE"), "inst", "unit_tests", "pkg", "testpkg")
-          chk <- checkglobals::checkglobals(pkg = pkg_root)
+          (chk <- checkglobals::checkglobals(pkg = pkg_root))
           path <- checkglobals::as_sarif_json(
                     chk, 
                     path = file.path(Sys.getenv("GITHUB_WORKSPACE"), "checkglobals.json"),
-                    root_dir = Sys.getenv("GITHUB_WORKSPACE")
+                    root_dir = Sys.getenv("GITHUB_WORKSPACE"),
+                    use_cli = FALSE
           )
           cat("path=", path, "\n", file = Sys.getenv("GITHUB_OUTPUT"), sep = "", append = TRUE)
         shell: Rscript {0}

@@ -563,7 +563,7 @@ result_unused_pkg_impl <- function(pkg, uri, endLine = 1L) {
 											),
 											region = list(
 													startLine = 1L,
-													startColumn = endLine
+													endLine = endLine
 											)
 									)
 							)
@@ -612,7 +612,8 @@ result_global_impl <- function(global, srcref, prj_root) {
 
 result_imports_impl <- function(imports, srcref, uri, endLine = 1L, use_cli = FALSE) {
 	
-	funinfo <- fmt_align(list(names(imports), sprintf("*%s*", fmt_srcref(srcref, FALSE))), use_cli = FALSE)
+	funinfo <- sprintf("*%s*", trimws(fmt_srcref(srcref, FALSE), which = "right"))
+	funinfo <- fmt_align(list(names(imports), funinfo), use_cli = FALSE)
 	funsplit <- split(names(imports), f = imports)
 	mw <- max(nchar(names(funsplit)))
 	pkgnms <- sprintf("**%s**", names(funsplit))
@@ -631,7 +632,6 @@ result_imports_impl <- function(imports, srcref, uri, endLine = 1L, use_cli = FA
 				stringsAsFactors = FALSE
 		)
 		msgs <- lapply(names(funsplit), function(root) paste(cli::tree(nodes, root = root), collapse = "\n"))
-		msgs <- do.call(paste, args = c(msgs, list(sep = "\n")))
 	} else {
 		funsplit <- utils::relist(funinfo, funsplit)
 		names(pkginfo) <- names(funsplit)
@@ -656,7 +656,7 @@ result_imports_impl <- function(imports, srcref, uri, endLine = 1L, use_cli = FA
 									),
 									region = list(
 											startLine = 1,
-											startColumn = endLine
+											endLine = endLine
 									)
 							)
 					)
