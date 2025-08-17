@@ -23,9 +23,11 @@ used to convert wildcard patterns to regular expressions.}
 \itemize{
 \item \code{all.names}, a logical value. If \code{TRUE}, all object names are returned.
 If \code{FALSE}, names which begin with a \samp{.} are omitted. Defaults to \code{TRUE}.
-\item \code{pretty}, a logical value passed to \code{jsonlite::toJSON}. Defaults to \code{TRUE}.
+\item \code{pretty}, a logical value passed to \code{jsonlite::toJSON}. Defaults to \code{FALSE}.
 \item \code{root_dir}, directory to use as root with repect to which all result uri's are 
 included as relative paths.
+\item \code{use_cli}, a logical value indicating if \code{cli} should be used to format the result messages.
+Defaults to \code{TRUE}, which means that \code{cli}-formatting is attempted if \code{cli} is installed.
 }}
 }
 \value{
