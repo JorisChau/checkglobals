@@ -632,6 +632,7 @@ result_imports_impl <- function(imports, srcref, uri, endLine = 1L, use_cli = FA
 				stringsAsFactors = FALSE
 		)
 		msgs <- lapply(names(funsplit), function(root) paste(cli::tree(nodes, root = root), collapse = "\n"))
+		msgs <- do.call(paste, args = c(msgs, list(sep = "\n")))
 	} else {
 		funsplit <- utils::relist(funinfo, funsplit)
 		names(pkginfo) <- names(funsplit)

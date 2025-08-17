@@ -430,7 +430,7 @@ fmt_align <- function(cols, mw = NA, use_cli) {
     aligned <- lapply(cols, function(col) cli::ansi_align(col, align = "left", width = ifelse(is.na(mw), max(cli::ansi_nchar(col, "width")), mw)))
     cli::ansi_trimws(do.call(paste, c("", aligned)), "right")
   } else {
-    aligned <- lapply(cols, function(col) paste0(col, strrep(" ", ifelse(is.na(mw), max(nchar(col)), pmax(max(nchar(col)), mw)) - nchar(col))))
+    aligned <- lapply(cols, function(col) paste0(col, strrep("\u00A0", ifelse(is.na(mw), max(nchar(col)), pmax(max(nchar(col)), mw)) - nchar(col))))
     trimws(do.call(paste, c("", aligned)), "right")
   }
 }
