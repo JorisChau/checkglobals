@@ -1,7 +1,7 @@
 # checkglobals 0.1.4
 
 * Convert `checkglobals` object to sarif json
-* Added example GH action to upload sarif file
+* Added sarif-upload example gh-workflow
 
 # checkglobals 0.1.3
 

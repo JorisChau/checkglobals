@@ -4,6 +4,8 @@ PWD=$(shell pwd)
 
 all: check clean
 
+.PHONY: docker
+
 doc:
 	Rscript -e "roxygen2::roxygenize()"
 
@@ -22,8 +24,11 @@ install: build
 check: build
 	R CMD check $(PKGNAME)_$(PKGVERS).tar.gz
 
-rchk: build
+rchk-run: build
 	docker run --rm -v $(PWD):/rchk/$(PKGNAME) kalibera/rchk:latest /rchk/$(PKGNAME)/$(PKGNAME)_$(PKGVERS).tar.gz
+
+rdevel-build: build
+	docker build -f Dockerfile --tag $(PKGNAME):$(PKGVERS) $(PWD)
 
 clean:
 	$(RM) -r $(PKGNAME).Rcheck/

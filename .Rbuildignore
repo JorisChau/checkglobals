@@ -13,3 +13,4 @@
 ^CRAN-SUBMISSION$
 ^Makefile$
 ^docker$
+^Dockerfile$
