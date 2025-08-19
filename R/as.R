@@ -593,7 +593,7 @@ result_global_impl <- function(global, srcref, prj_root) {
 			})
 	refs <- fmt_srcref(list(srcref), use_cli = FALSE)
 	if(nzchar(refs)) {
-		refs <- sprintf(" at *%s*", refs)
+		refs <- sprintf(" at %s", refs)
 	}
 	msg <- sprintf("Unrecognized global %s **'%s%s'**%s", global, names(global), 
 			ifelse(global == "function", "()", ""), refs)
@@ -612,7 +612,7 @@ result_global_impl <- function(global, srcref, prj_root) {
 
 result_imports_impl <- function(imports, srcref, uri, endLine = 1L, use_cli = FALSE) {
 	
-	funinfo <- sprintf("*%s*", trimws(fmt_srcref(srcref, FALSE), which = "right"))
+	funinfo <- trimws(fmt_srcref(srcref, FALSE), which = "right")
 	funinfo <- fmt_align(list(names(imports), funinfo), use_cli = FALSE)
 	funsplit <- split(names(imports), f = imports)
 	mw <- max(nchar(names(funsplit)))
@@ -667,6 +667,7 @@ result_imports_impl <- function(imports, srcref, uri, endLine = 1L, use_cli = FA
 }
 
 rel_path <- function(path, root) {
+	path <- normalizePath(path, winslash = "/", mustWork = FALSE)
 	root <- normalizePath(root, winslash = "/", mustWork = FALSE)
 	rel <- basename(path)
 	dir_path <- dirname(path[1])
