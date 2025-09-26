@@ -50,13 +50,13 @@
 #' }
 #' @export
 check_source <- function(file, text, dir, include_compiled = FALSE, skip_globals = NULL) {
-	
-	## match call 
+
+	## match call
 	mc <- match.call()
 	for(arg in names(mc)[-1]) {
 		mc[arg] <- list(eval(mc[[arg]], envir = parent.frame()))
 	}
-	
+
 	## parse code
 	if(!missing(file)) {
 		if(!file.exists(file)) {
@@ -98,7 +98,7 @@ check_source <- function(file, text, dir, include_compiled = FALSE, skip_globals
 	} else {
 		stop("One of 'file', 'text' or 'dir' must be provided")
 	}
-	
+
 	## check R source code
 	check <- .check_internal(
 			expr = expr,
@@ -106,7 +106,7 @@ check_source <- function(file, text, dir, include_compiled = FALSE, skip_globals
 			include_compiled = include_compiled,
 			skip_globals = skip_globals
 	)
-	
+
 	## collect imports
 	loaded_pkgs <- unique(get(".__pkgs__", envir = check$imports, inherits = FALSE))
 	loaded_pkgs <- loaded_pkgs %||% character(0)
@@ -137,7 +137,7 @@ check_source <- function(file, text, dir, include_compiled = FALSE, skip_globals
 		missing_fun_pkgs <- fun_pkgs[!.find_pkgs(fun_pkgs)]
 		missing_pkgs <- union(missing_pkgs, missing_fun_pkgs)
 	}
-	
+
 	## move imported globals to imports
 	globs <- objects(check$globals, all.names = TRUE, sorted = FALSE)
 	srcrefg <- check$srcrefg
@@ -154,7 +154,7 @@ check_source <- function(file, text, dir, include_compiled = FALSE, skip_globals
 			rm(list = names(imports)[isimport], envir = check$globals, inherits = FALSE)
 		}
 	}
-	
+
 	return(
 			structure(
 					list(
@@ -172,10 +172,10 @@ check_source <- function(file, text, dir, include_compiled = FALSE, skip_globals
 							),
 							missing_pkgs = missing_pkgs,
 							loaded_pkgs = loaded_pkgs
-					), 
+					),
 					call = mc,
 					class = "checkglobals"
 			)
 	)
-	
+
 }

@@ -486,7 +486,7 @@ as_sarif_json.checkglobals <- function(x, path, pattern, which = c("global", "im
 				}
 				imports <- sort(imports)
 				srcref_imports <- x$imports$srcref[names(imports)]
-				result_imports <- result_imports_impl(imports, srcref_imports, uri, endLine, use_cli)
+				result_imports <- result_imports_impl(imports, srcref_imports, uri, endLine, endLine, use_cli)
 				results <- c(results, list(result_imports))
 			}
 			if(length(loaded_pkgs)) {
@@ -517,16 +517,13 @@ as_sarif_json.checkglobals <- function(x, path, pattern, which = c("global", "im
 	}	
 }
 
-result_missing_pkg_impl <- function(pkg, uri, endLine = 1L) {
-	msg <- sprintf("Package **'%s'** is required but not installed", pkg)
+result_missing_pkg_impl <- function(pkg, uri, startLine = 1L, endLine = startLine) {
+	msg <- sprintf("Package '%s' is required but not installed", pkg)
 	return(
 			list(
 					ruleId = "CG02",
 					level = "note",
-					message = list(
-							markdown = msg,
-							text = gsub("\\*", "", msg)
-					),
+					message = list(text = msg),
 					locations = list(
 							list(
 									physicalLocation = list(
@@ -534,7 +531,7 @@ result_missing_pkg_impl <- function(pkg, uri, endLine = 1L) {
 													uri = uri
 											),
 											region = list(
-													startLine = 1L,
+													startLine = startLine,
 													endLine = endLine
 											
 											)
@@ -545,16 +542,13 @@ result_missing_pkg_impl <- function(pkg, uri, endLine = 1L) {
 	)
 }
 
-result_unused_pkg_impl <- function(pkg, uri, endLine = 1L) {
-	msg <-  sprintf("Package **'%s'** is loaded or imported but not used", pkg)
+result_unused_pkg_impl <- function(pkg, uri, startLine = 1L, endLine = endLine) {
+	msg <-  sprintf("Package '%s' is loaded or imported but not used", pkg)
 	return(
 			list(
 					ruleId = "CG03",
 					level = "note",
-					message = list(
-							markdown = msg,
-							text = gsub("\\*", "", msg)
-					),
+					message = list(text = msg),
 					locations = list(
 							list(
 									physicalLocation = list(
@@ -562,7 +556,7 @@ result_unused_pkg_impl <- function(pkg, uri, endLine = 1L) {
 													uri = uri
 											),
 											region = list(
-													startLine = 1L,
+													startLine = startLine,
 													endLine = endLine
 											)
 									)
@@ -595,28 +589,25 @@ result_global_impl <- function(global, srcref, prj_root) {
 	if(nzchar(refs)) {
 		refs <- sprintf(" at %s", refs)
 	}
-	msg <- sprintf("Unrecognized global %s **'%s%s'**%s", global, names(global), 
+	msg <- sprintf("Unrecognized global %s '%s%s'%s", global, names(global), 
 			ifelse(global == "function", "()", ""), refs)
 	return(
 			list(
 					ruleId = "CG01",
 					level = "note",
-					message = list(
-							markdown = msg,
-							text = gsub("\\*", "", msg)
-					),
+					message = list(text = msg),
 					locations = locations
 			)
 	)
 }
 
-result_imports_impl <- function(imports, srcref, uri, endLine = 1L, use_cli = FALSE) {
+result_imports_impl <- function(imports, srcref, uri, startLine = 1L, endLine = startLine, use_cli = FALSE) {
 	
 	funinfo <- trimws(fmt_srcref(srcref, FALSE), which = "right")
 	funinfo <- fmt_align(list(names(imports), funinfo), use_cli = FALSE)
 	funsplit <- split(names(imports), f = imports)
 	mw <- max(nchar(names(funsplit)))
-	pkgnms <- sprintf("**%s**", names(funsplit))
+	pkgnms <- sprintf("%s", names(funsplit))
 	pkginfo <- trimws(fmt_align(list(pkgnms, fmt_count(funsplit, srcref, use_cli = FALSE)), mw + 2, FALSE), which = "left")
 	if(any(duplicated(c(names(funsplit), names(imports))))) {
 		funnms <- make.unique(c(names(funsplit), names(imports)))
@@ -631,7 +622,9 @@ result_imports_impl <- function(imports, srcref, uri, endLine = 1L, use_cli = FA
 				info = c(pkginfo, funinfo),
 				stringsAsFactors = FALSE
 		)
-		msgs <- lapply(names(funsplit), function(root) paste(cli::tree(nodes, root = root), collapse = "\n"))
+		msgs <- lapply(names(funsplit), function(root) {
+					trimws(paste(paste0("\u00A0\u00A0", cli::tree(nodes, root = root)), collapse = "\n"), whitespace = "\u00A0")
+				})
 		msgs <- do.call(paste, args = c(msgs, list(sep = "\n")))
 	} else {
 		funsplit <- utils::relist(funinfo, funsplit)
@@ -645,10 +638,7 @@ result_imports_impl <- function(imports, srcref, uri, endLine = 1L, use_cli = FA
 			ruleId = "CG04",
 			level = "none",
 			kind = "informational",
-			message = list(
-					markdown = msgs,
-					text = gsub("\\*", "", msgs)
-			),
+			message = list(text = msgs),
 			locations =  list(
 					list(
 							physicalLocation = list(
@@ -656,7 +646,7 @@ result_imports_impl <- function(imports, srcref, uri, endLine = 1L, use_cli = FA
 											uri = uri
 									),
 									region = list(
-											startLine = 1,
+											startLine = startLine,
 											endLine = endLine
 									)
 							)
