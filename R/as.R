@@ -518,14 +518,14 @@ as_sarif_json.checkglobals <- function(x, path, pattern, which = c("global", "im
 }
 
 result_missing_pkg_impl <- function(pkg, uri, startLine = 1L, endLine = startLine) {
-	msg <- sprintf("Package <pre>%s</pre> is required but not installed", pkg)
+	msg <- sprintf("Package <code>%s</code> is required but not installed", pkg)
 	return(
 			list(
 					ruleId = "CG02",
 					level = "note",
 					message = list(
 							markdown = msg,
-							text = gsub("</?pre>", "'", msg)
+							text = gsub("</?code>", "'", msg)
 					),
 					locations = list(
 							list(
@@ -546,14 +546,14 @@ result_missing_pkg_impl <- function(pkg, uri, startLine = 1L, endLine = startLin
 }
 
 result_unused_pkg_impl <- function(pkg, uri, startLine = 1L, endLine = endLine) {
-	msg <-  sprintf("Package <pre>%s</pre> is loaded or imported but not used", pkg)
+	msg <-  sprintf("Package <code>%s</code> is loaded or imported but not used", pkg)
 	return(
 			list(
 					ruleId = "CG03",
 					level = "note",
 					message = list(
 							markdown = msg,
-							text = gsub("</?pre>", "'", msg)
+							text = gsub("</?code>", "'", msg)
 					),
 					locations = list(
 							list(
@@ -595,7 +595,7 @@ result_global_impl <- function(global, srcref, prj_root) {
 	if(nzchar(refs)) {
 		refs <- sprintf(" at %s", refs)
 	}
-	msg <- sprintf("Unrecognized global %s <pre>%s%s</pre>%s", global, names(global), 
+	msg <- sprintf("Unrecognized global %s <code>%s%s</code>%s", global, names(global), 
 			ifelse(global == "function", "()", ""), refs)
 	return(
 			list(
@@ -603,7 +603,7 @@ result_global_impl <- function(global, srcref, prj_root) {
 					level = "note",
 					message = list(
 							markdown = msg,
-							text = gsub("</?pre>", "'", msg)
+							text = gsub("</?code>", "'", msg)
 					),
 					locations = locations
 			)
