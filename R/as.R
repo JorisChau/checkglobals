@@ -638,7 +638,9 @@ result_imports_impl <- function(imports, srcref, uri, startLine = 1L, endLine = 
 			ruleId = "CG04",
 			level = "none",
 			kind = "informational",
-			message = list(text = msgs),
+			message = list(
+					markdown = sprintf("<pre><code>%s</pre></code>", msgs),
+					text = msgs),
 			locations =  list(
 					list(
 							physicalLocation = list(
