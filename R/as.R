@@ -526,13 +526,13 @@ result_missing_pkg_impl <- function(pkg, uri, startLine = 1L, endLine = startLin
     list(
       ruleId = "CG02",
       level = "note",
-      if(include_markdown) {
-        message = list(
+      message = if(include_markdown) {
+        list(
           markdown = msg,
           text = gsub("</?code>", "'", msg)
         )
       } else {
-        message = list(
+        list(
           text = gsub("</?code>", "'", msg)
         )
       },
@@ -560,13 +560,13 @@ result_unused_pkg_impl <- function(pkg, uri, startLine = 1L, endLine = endLine, 
     list(
       ruleId = "CG03",
       level = "note",
-      if(include_markdown) {
-        message = list(
+      message = if(include_markdown) {
+        list(
           markdown = msg,
           text = gsub("</?code>", "'", msg)
         )
       } else {
-        message = list(
+        list(
           text = gsub("</?code>", "'", msg)
         )
       },
@@ -616,13 +616,13 @@ result_global_impl <- function(global, srcref, prj_root, include_markdown = FALS
     list(
       ruleId = "CG01",
       level = "note",
-      if(include_markdown) {
-        message = list(
+      message = if(include_markdown) {
+        list(
           markdown = msg,
           text = gsub("</?code>", "'", msg)
         )
       } else {
-        message = list(
+        list(
           text = gsub("</?code>", "'", msg)
         )
       },
@@ -668,14 +668,14 @@ result_imports_impl <- function(imports, srcref, uri, startLine = 1L, endLine = 
     ruleId = "CG04",
     level = "none",
     kind = "informational",
-    if(include_markdown) {
-      message = list(
+    message = if(include_markdown) {
+      list(
         markdown = sprintf("<pre><code>%s</pre></code>", msgs),
         text = msgs
       )
     } else {
-      message = list(
-        markdown = sprintf("<pre><code>%s</pre></code>", msgs)
+      list(
+        text = msgs
       )
     },
     locations =  list(
