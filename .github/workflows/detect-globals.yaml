@@ -20,7 +20,7 @@ jobs:
       security-events: write
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-      sarif_json: checkglobals.sarif.json
+      sarif_json: checkglobals.json
     steps:
       - uses: actions/checkout@v4
       - uses: r-lib/actions/setup-r@v2

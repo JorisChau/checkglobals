@@ -526,12 +526,16 @@ result_missing_pkg_impl <- function(pkg, uri, startLine = 1L, endLine = startLin
     list(
       ruleId = "CG02",
       level = "note",
-      message = list(
-        if(include_markdown) {
-          markdown = msg
-        },
-        text = gsub("</?code>", "'", msg)
-      ),
+      if(include_markdown) {
+        message = list(
+          markdown = msg,
+          text = gsub("</?code>", "'", msg)
+        )
+      } else {
+        message = list(
+          text = gsub("</?code>", "'", msg)
+        )
+      },
       locations = list(
         list(
           physicalLocation = list(
@@ -556,12 +560,16 @@ result_unused_pkg_impl <- function(pkg, uri, startLine = 1L, endLine = endLine, 
     list(
       ruleId = "CG03",
       level = "note",
-      message = list(
-        if(include_markdown) {
-          markdown = msg
-        },
-        text = gsub("</?code>", "'", msg)
-      ),
+      if(include_markdown) {
+        message = list(
+          markdown = msg,
+          text = gsub("</?code>", "'", msg)
+        )
+      } else {
+        message = list(
+          text = gsub("</?code>", "'", msg)
+        )
+      },
       locations = list(
         list(
           physicalLocation = list(
@@ -608,12 +616,16 @@ result_global_impl <- function(global, srcref, prj_root, include_markdown = FALS
     list(
       ruleId = "CG01",
       level = "note",
-      message = list(
-        if(include_markdown) {
-          markdown = msg
-        },
-        text = gsub("</?code>", "'", msg)
-      ),
+      if(include_markdown) {
+        message = list(
+          markdown = msg,
+          text = gsub("</?code>", "'", msg)
+        )
+      } else {
+        message = list(
+          text = gsub("</?code>", "'", msg)
+        )
+      },
       locations = locations
     )
   )
@@ -656,11 +668,16 @@ result_imports_impl <- function(imports, srcref, uri, startLine = 1L, endLine = 
     ruleId = "CG04",
     level = "none",
     kind = "informational",
-    message = list(
-      if(include_markdown) {
+    if(include_markdown) {
+      message = list(
+        markdown = sprintf("<pre><code>%s</pre></code>", msgs),
+        text = msgs
+      )
+    } else {
+      message = list(
         markdown = sprintf("<pre><code>%s</pre></code>", msgs)
-      },
-      text = msgs),
+      )
+    },
     locations =  list(
       list(
         physicalLocation = list(
