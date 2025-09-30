@@ -176,37 +176,116 @@ chk <- checkglobals::checkglobals(pkg = "../checkglobals")
 
 ## data.frame with globals/imports 
 as.data.frame(chk)
-#>                  name package   type
-#> 1          ansi_align     cli import
-#> 2          ansi_nchar     cli import
-#> 3        ansi_strtrim     cli import
-#> 4         ansi_trimws     cli import
-#> 5   cli_alert_success     cli import
-#> 6   cli_alert_warning     cli import
-#> 7              cli_h1     cli import
-#> 8      code_highlight     cli import
-#> 9            col_blue     cli import
-#> 10          col_green     cli import
-#> 11           col_grey     cli import
-#> 12            col_red     cli import
-#> 13          col_white     cli import
-#> 14         col_yellow     cli import
-#> 15      console_width     cli import
-#> 16         style_bold     cli import
-#> 17    style_hyperlink     cli import
-#> 18       style_italic     cli import
-#> 19             symbol     cli import
-#> 20               tree     cli import
-#> 21               purl   knitr import
-#> 22      download.file   utils import
-#> 23 installed.packages   utils import
-#> 24             relist   utils import
-#> 25              untar   utils import
+#>                  name  package   type
+#> 1          ansi_align      cli import
+#> 2          ansi_nchar      cli import
+#> 3        ansi_strtrim      cli import
+#> 4         ansi_trimws      cli import
+#> 5   cli_alert_success      cli import
+#> 6   cli_alert_warning      cli import
+#> 7              cli_h1      cli import
+#> 8      code_highlight      cli import
+#> 9            col_blue      cli import
+#> 10          col_green      cli import
+#> 11           col_grey      cli import
+#> 12            col_red      cli import
+#> 13          col_white      cli import
+#> 14         col_yellow      cli import
+#> 15      console_width      cli import
+#> 16         style_bold      cli import
+#> 17    style_hyperlink      cli import
+#> 18       style_italic      cli import
+#> 19             symbol      cli import
+#> 20               tree      cli import
+#> 21          read_json jsonlite import
+#> 22             toJSON jsonlite import
+#> 23         write_json jsonlite import
+#> 24               purl    knitr import
+#> 25      download.file    utils import
+#> 26 installed.packages    utils import
+#> 27             relist    utils import
+#> 28              untar    utils import
 
 ## vector of package dependencies
 checkglobals::as_vector(chk)[["package"]]
-#> [1] "cli"   "knitr" "utils"
+#> [1] "cli"      "jsonlite" "knitr"    "utils"
 ```
+
+The `as_sarif_json` method generates a
+[SARIF](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html)
+(Static Analysis Results Interchange Format) JSON from a `checkglobals`
+S3-object for upload to external CI servers, such as [GitHub Code
+Scanning](https://docs.github.com/en/code-security/code-scanning/integrating-with-code-scanning/sarif-support-for-code-scanning),
+Jenkins [warnings-ng](https://plugins.jenkins.io/warnings-ng/) plugin,
+or [Azure
+DevOps/Pipelines](https://learn.microsoft.com/en-us/azure/devops/pipelines/tasks/reference/advanced-security-publish-v1?view=azure-pipelines).
+
+#### GitHub Code Scanning
+
+The following `yaml` code is an example extract from a GitHub Actions
+workflow file that runs `checkglobals()` on the root directory (`"."`)
+of an R-package repository and uploads the `checkglobals` SARIF JSON
+using the
+[`upload-sarif`](https://github.com/github/codeql-action/tree/v3/upload-sarif)
+action. Here it is assumed that `checkglobals` has been installed as a
+dependency in a previous workflow step.
+
+``` yaml
+- name: Generate SARIF 
+  run: |
+    checkglobals::checkglobals(pkg = ".") |>
+    checkglobals::as_sarif_json(
+              path = file.path(Sys.getenv("GITHUB_WORKSPACE"), "checkglobals.json"),
+              root_dir = Sys.getenv("GITHUB_WORKSPACE"),
+              include_markdown = FALSE
+    )
+  shell: Rscript {0}
+- name: Upload SARIF
+  uses: github/codeql-action/upload-sarif@v3
+  with:
+    sarif_file: ${{ github.workspace }}/checkglobals.json
+```
+
+After successful parsing of the SARIF JSON content, the SARIF result
+entries are displayed as alerts under `Security > Code scanning`:
+
+<img src="./README/screen09.png" width="75%" style='margin-left:70px' style="display: block; margin: auto;" />
+
+#### Jenkins warnings-ng
+
+If the Jenkins [warnings-ng](https://plugins.jenkins.io/warnings-ng/)
+plugin is available, the following `yaml` code can be included in a
+Jenkinsfile to ingest the `checkglobals` SARIF JSON obtained from
+scanning an R-package with `checkglobals(pkg = ".")`. Here it is again
+assumed that `checkglobals` has been installed as a dependency in a
+previous stage.
+
+``` yaml
+stage('checkglobals') {
+    steps {
+        sh '''R -q -e \'{
+          checkglobals::checkglobals(pkg = ".") |>
+          checkglobals::as_sarif_json(
+                  chk,
+                  path = "checkglobals.sarif.json",
+                  root_dir = ".",
+                  markdown = TRUE
+          )
+        }\''''
+    }
+  post {
+      always {
+          recordIssues enabledForFailure: true, sourceDirectories: [[path: '.']], tool: sarif(pattern: "*.sarif.json", name: "checkglobals")
+      }
+  }
+}
+```
+
+The [warnings-ng](https://plugins.jenkins.io/warnings-ng/) plugin
+reports the SARIF result entries as individual issues as well as various
+summary charts and statistics.
+
+<img src="./README/screen10.png" width="75%" style='margin-left:70px' style="display: block; margin: auto;" />
 
 ## Known limitations
 

@@ -26,6 +26,6 @@ json object.
 \description{
 \code{as_sarif_json} is a generic function to cast objects returned by \code{\link{checkglobals}},
 \code{\link{check_pkg}} or \code{\link{check_source}} to SARIF (Static Analysis Results Interchange Format) json
-for consumption by external CI tools (e.g. GitHub Code Scanning, Azure DevOps, Jenkins Next Generation Warnings plugin).
+for upload to external CI tools (e.g. GitHub Code Scanning, Jenkins warnings-ng plugin or Azure DevOps).
 The function invokes particular \emph{methods} which depend on the \code{\link{class}} of the first argument.
 }

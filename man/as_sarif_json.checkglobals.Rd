@@ -24,15 +24,18 @@ used to convert wildcard patterns to regular expressions.}
 \item \code{all.names}, a logical value. If \code{TRUE}, all object names are returned.
 If \code{FALSE}, names which begin with a \samp{.} are omitted. Defaults to \code{TRUE}.
 \item \code{pretty}, a logical value passed to \code{jsonlite::toJSON}. Defaults to \code{FALSE}.
-\item \code{root_dir}, directory to use as root with repect to which all result uri's are 
-included as relative paths.
+\item \code{root_dir}, directory to use as root relative to which all result uri's are generated.
 \item \code{use_cli}, a logical value indicating if \code{cli} should be used to format the result messages.
 Defaults to \code{TRUE}, which means that \code{cli}-formatting is attempted if \code{cli} is installed.
+\item \code{markdown}, a logical value indicating if \code{markdown} result fields should be included.
+ Defaults to \code{FALSE}.
+\item \code{first_only}, a logical value to include only the first detected location of an unknown
+global variable or function (instead of all detected locations). Defaults to \code{FALSE}.
 }}
 }
 \value{
-if \code{path} is provided writes the SARIF json content to \code{path} and 
-returns the \code{path} invisibly, otherwise returns the full SARIF json object.
+if \code{path} is provided writes the SARIF json content to \code{path} and
+returns the \code{path} invisibly, otherwise returns the SARIF json content as a \code{json} object..
 }
 \description{
 Cast an S3-object of class \code{"checkglobals"} to SARIF json.
@@ -45,5 +48,5 @@ chk <- checkglobals(
     package = "checkglobals"
   )
 )
-json <- as_sarif_json(chk, pretty = TRUE)
+json <- as_sarif_json(chk, pretty = TRUE, markdown = TRUE)
 }

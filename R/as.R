@@ -371,7 +371,7 @@ as_vector.checkglobalsi <- function(x, pattern, ...) {
 #' Cast to SARIF json
 #' @description \code{as_sarif_json} is a generic function to cast objects returned by \code{\link{checkglobals}},
 #' \code{\link{check_pkg}} or \code{\link{check_source}} to SARIF (Static Analysis Results Interchange Format) json
-#' for consumption by external CI tools (e.g. GitHub Code Scanning, Azure DevOps, Jenkins Next Generation Warnings plugin).
+#' for upload to external CI tools (e.g. GitHub Code Scanning, Jenkins warnings-ng plugin or Azure DevOps).
 #' The function invokes particular \emph{methods} which depend on the \code{\link{class}} of the first argument.
 #' @param x an S3-object to convert.
 #' @param path file path to write the SARIF json content to.
@@ -397,17 +397,16 @@ as_sarif_json <- function(x, path, pattern, which, ...) {
 #' \item \code{all.names}, a logical value. If \code{TRUE}, all object names are returned.
 #' If \code{FALSE}, names which begin with a \samp{.} are omitted. Defaults to \code{TRUE}.
 #' \item \code{pretty}, a logical value passed to \code{jsonlite::toJSON}. Defaults to \code{FALSE}.
-#' \item \code{root_dir}, directory to use as root with repect to which all result uri's are
-#' included as relative paths.
+#' \item \code{root_dir}, directory to use as root relative to which all result uri's are generated.
 #' \item \code{use_cli}, a logical value indicating if \code{cli} should be used to format the result messages.
 #' Defaults to \code{TRUE}, which means that \code{cli}-formatting is attempted if \code{cli} is installed.
-#' \item \code{markdown}, a logical value indicating if \code{markdown} fields should be included in the
-#' result entries of the SARIF json file. Defaults to \code{FALSE}.
+#' \item \code{markdown}, a logical value indicating if \code{markdown} result fields should be included.
+#'  Defaults to \code{FALSE}.
 #' \item \code{first_only}, a logical value to include only the first detected location of an unknown
-#' global variable (instead of all detected locations) in the SARIF json results. Defaults to \code{FALSE}.
+#' global variable or function (instead of all detected locations). Defaults to \code{FALSE}.
 #' }
 #' @return if \code{path} is provided writes the SARIF json content to \code{path} and
-#' returns the \code{path} invisibly, otherwise returns the full SARIF json object.
+#' returns the \code{path} invisibly, otherwise returns the SARIF json content as a \code{json} object..
 #' @examples
 #' ## R-package from folder
 #' chk <- checkglobals(
@@ -416,7 +415,7 @@ as_sarif_json <- function(x, path, pattern, which, ...) {
 #'     package = "checkglobals"
 #'   )
 #' )
-#' json <- as_sarif_json(chk, pretty = TRUE)
+#' json <- as_sarif_json(chk, pretty = TRUE, markdown = TRUE)
 #' @export
 as_sarif_json.checkglobals <- function(x, path, pattern, which = c("global", "import"), ...) {
   stopifnot(
