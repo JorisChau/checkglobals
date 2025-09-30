@@ -403,6 +403,8 @@ as_sarif_json <- function(x, path, pattern, which, ...) {
 #' Defaults to \code{TRUE}, which means that \code{cli}-formatting is attempted if \code{cli} is installed.
 #' \item \code{markdown}, a logical value indicating if \code{markdown} fields should be included in the
 #' result entries of the SARIF json file. Defaults to \code{FALSE}.
+#' \item \code{first_only}, a logical value to include only the first detected location of an unknown
+#' global variable (instead of all detected locations) in the SARIF json results. Defaults to \code{FALSE}.
 #' }
 #' @return if \code{path} is provided writes the SARIF json content to \code{path} and
 #' returns the \code{path} invisibly, otherwise returns the full SARIF json object.
@@ -430,6 +432,7 @@ as_sarif_json.checkglobals <- function(x, path, pattern, which = c("global", "im
   uri_root <- dots$root_dir %||% call_path
   use_cli <- dots$use_cli %||% requireNamespace("cli", quietly = TRUE)
   include_markdown <- dots$markdown %||% FALSE
+  first_only <- dots$first_only %||% FALSE
 
   if(!file.info(uri_root)$isdir) {
     path_files <- basename(uri_root)
@@ -456,9 +459,9 @@ as_sarif_json.checkglobals <- function(x, path, pattern, which = c("global", "im
     globalnms <- objects(x$globals$env, all.names = all.names, sorted = TRUE)
     globals <- unlist(mget(globalnms, envir = x$globals$env, inherits = FALSE), recursive = FALSE)
     srcref_globals <- x$globals$srcref[globalnms]
-    results_globals <- lapply(globalnms,
-                              function(nm) result_global_impl(globals[nm], srcref_globals[[nm]], uri_root, include_markdown)
-    )
+    results_globals <- lapply(globalnms, function(nm) {
+      result_global_impl(globals[nm], srcref_globals[[nm]], uri_root, include_markdown, first_only)
+    })
     results <- c(results, results_globals)
   }
 
@@ -587,8 +590,14 @@ result_unused_pkg_impl <- function(pkg, uri, startLine = 1L, endLine = endLine, 
   )
 }
 
-result_global_impl <- function(global, srcref, prj_root, include_markdown = FALSE) {
-  locations <- lapply(srcref, function(src) {
+result_global_impl <- function(global, srcref, prj_root, include_markdown = FALSE, first_only = FALSE) {
+
+  if(first_only && is.list(srcref) && length(srcref) > 1) {
+    srcref1 <- srcref[1]
+  } else {
+    srcref1 <- srcref
+  }
+  locations <- lapply(srcref1, function(src) {
     if(inherits(src, "srcref")) {
       srcfile <- attr(src, "srcfile")
       list(
