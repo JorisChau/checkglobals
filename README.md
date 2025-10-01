@@ -267,7 +267,6 @@ stage('checkglobals') {
         sh '''R -q -e \'{
           checkglobals::checkglobals(pkg = ".") |>
           checkglobals::as_sarif_json(
-                  chk,
                   path = "checkglobals.sarif.json",
                   root_dir = ".",
                   markdown = TRUE
