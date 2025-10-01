@@ -237,8 +237,7 @@ in a previous workflow step.
     checkglobals::checkglobals(pkg = ".") |>
     checkglobals::as_sarif_json(
               path = file.path(Sys.getenv("GITHUB_WORKSPACE"), "checkglobals.json"),
-              root_dir = Sys.getenv("GITHUB_WORKSPACE"),
-              include_markdown = FALSE
+              root_dir = Sys.getenv("GITHUB_WORKSPACE")
     )
   shell: Rscript {0}
 - name: Upload SARIF
@@ -277,7 +276,7 @@ stage('checkglobals') {
     }
   post {
       always {
-          recordIssues enabledForFailure: true, sourceDirectories: [[path: '.']], tool: sarif(pattern: "*.sarif.json", name: "checkglobals")
+          recordIssues enabledForFailure: true, tool: sarif(pattern: "*.sarif.json", name: "checkglobals")
       }
   }
 }

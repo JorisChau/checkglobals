@@ -37,8 +37,7 @@ jobs:
           checkglobals::as_sarif_json(
                     chk,
                     path = file.path(Sys.getenv("GITHUB_WORKSPACE"), Sys.getenv("sarif_json")),
-                    root_dir = Sys.getenv("GITHUB_WORKSPACE"),
-                    include_markdown = FALSE
+                    root_dir = Sys.getenv("GITHUB_WORKSPACE")
           )
         shell: Rscript {0}
       - name: upload sarif
