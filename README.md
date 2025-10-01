@@ -214,21 +214,22 @@ checkglobals::as_vector(chk)[["package"]]
 The `as_sarif_json` method generates a
 [SARIF](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html)
 (Static Analysis Results Interchange Format) JSON from a `checkglobals`
-S3-object for upload to external CI servers, such as [GitHub Code
+S3-object for upload to external CI servers, (e.g. [GitHub Code
 Scanning](https://docs.github.com/en/code-security/code-scanning/integrating-with-code-scanning/sarif-support-for-code-scanning),
 Jenkins [warnings-ng](https://plugins.jenkins.io/warnings-ng/) plugin,
 or [Azure
-DevOps/Pipelines](https://learn.microsoft.com/en-us/azure/devops/pipelines/tasks/reference/advanced-security-publish-v1?view=azure-pipelines).
+DevOps/Pipelines](https://learn.microsoft.com/en-us/azure/devops/pipelines/tasks/reference/advanced-security-publish-v1?view=azure-pipelines)).
 
 #### GitHub Code Scanning
 
-The following `yaml` code is an example extract from a GitHub Actions
-workflow file that runs `checkglobals()` on the root directory (`"."`)
-of an R-package repository and uploads the `checkglobals` SARIF JSON
-using the
+The `yaml` chunk below is an extract from a GitHub Actions workflow file
+(source:
+<https://github.com/JorisChau/checkglobals/blob/main/.github/workflows/detect-globals.yaml>)
+that runs `checkglobals()` on the root directory (`"."`) of an R-package
+repository and uploads the `checkglobals` SARIF JSON using the
 [`upload-sarif`](https://github.com/github/codeql-action/tree/v3/upload-sarif)
-action. Here it is assumed that `checkglobals` has been installed as a
-dependency in a previous workflow step.
+action. **Note**: `checkglobals` needs to be installed as a dependency
+in a previous workflow step.
 
 ``` yaml
 - name: Generate SARIF 
@@ -253,11 +254,12 @@ entries are displayed as alerts under `Security > Code scanning`:
 
 #### Jenkins warnings-ng
 
-If the Jenkins [warnings-ng](https://plugins.jenkins.io/warnings-ng/)
-plugin is available, the following `yaml` code can be included in a
+In a Jenkins pipeline, if the
+[warnings-ng](https://plugins.jenkins.io/warnings-ng/) plugin is
+available, the example `yaml` chunk below can be included in a
 Jenkinsfile to ingest the `checkglobals` SARIF JSON obtained from
-scanning an R-package with `checkglobals(pkg = ".")`. Here it is again
-assumed that `checkglobals` has been installed as a dependency in a
+scanning an R-package with `checkglobals(pkg = ".")`. **Note**: it is
+again assumed that `checkglobals` is installed as a dependency in a
 previous stage.
 
 ``` yaml
@@ -282,8 +284,8 @@ stage('checkglobals') {
 ```
 
 The [warnings-ng](https://plugins.jenkins.io/warnings-ng/) plugin
-reports the SARIF result entries as individual issues as well as various
-summary charts and statistics.
+reports the SARIF result entries as individual issues in addition to
+various summary charts and statistics.
 
 <img src="./README/screen10.png" width="75%" style='margin-left:70px' style="display: block; margin: auto;" />
 
