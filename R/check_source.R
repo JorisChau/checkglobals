@@ -51,123 +51,131 @@
 #' @export
 check_source <- function(file, text, dir, include_compiled = FALSE, skip_globals = NULL) {
 
-  ## parse code
-  if(!missing(file)) {
-    if(!file.exists(file)) {
-      tmpdir <- tempdir(check = TRUE)
-      if(grepl("\\://", file)) {
-        utils::download.file(url = file, destfile = file.path(tmpdir, basename(file)))
-        file <- file.path(tmpdir, basename(file))
-      }
-    }
-    if(grepl("\\.(rmd|rmarkdown)$", file, ignore.case = TRUE)) {
-     stopifnot(
-       "knitr must be installed to check .Rmd or .Rmarkdown files." =
-         is.element("knitr", rownames(utils::installed.packages()))
-     )
-      if(!exists("tmpdir", inherits = FALSE)) {
-        tmpdir <- tempdir(check = TRUE)
-      }
-      file <- knitr::purl(
-        input = file,
-        output = file.path(tmpdir, sub("\\.(rmd|rmarkdown)$", ".R", basename(file), ignore.case = TRUE)),
-        quiet = TRUE
-      )
-    }
-    stopifnot(
-      "'file' not found, make sure that 'file' is the path to an existing R-script." =
-        file.exists(file),
-      "'file' format not recognized, make sure that 'file' is an existing R-script." =
-        grepl("\\.r$", file, ignore.case = TRUE)
-    )
-    expr <- parse(file = file, keep.source = TRUE)
-  } else if(!missing(text) && !is.null(text)) {
-    expr <- parse(text = text, keep.source = TRUE)
-  } else if(!missing(dir) && dir.exists(dir)) {
-    files <- list.files(dir, pattern = "\\.[rR]$", recursive = TRUE, full.names = TRUE)
-    if(!length(files)) {
-      stop(sprintf("no R-scripts present in directory %s", dir))
-    }
-    expr <- lapply(files, parse, keep.source = TRUE)
-  } else {
-    stop("One of 'file', 'text' or 'dir' must be provided")
-  }
+	## match call
+	mc <- match.call()
+	for(arg in names(mc)[-1]) {
+		mc[arg] <- list(eval(mc[[arg]], envir = parent.frame()))
+	}
 
-  ## check R source code
-  check <- .check_internal(
-    expr = expr,
-    is_pkg = FALSE,
-    include_compiled = include_compiled,
-    skip_globals = skip_globals
-  )
+	## parse code
+	if(!missing(file)) {
+		if(!file.exists(file)) {
+			tmpdir <- tempdir(check = TRUE)
+			if(grepl("\\://", file)) {
+				utils::download.file(url = file, destfile = file.path(tmpdir, basename(file)))
+				file <- file.path(tmpdir, basename(file))
+			}
+		}
+		if(grepl("\\.(rmd|rmarkdown)$", file, ignore.case = TRUE)) {
+			stopifnot(
+					"knitr must be installed to check .Rmd or .Rmarkdown files." =
+							is.element("knitr", rownames(utils::installed.packages()))
+			)
+			if(!exists("tmpdir", inherits = FALSE)) {
+				tmpdir <- tempdir(check = TRUE)
+			}
+			file <- knitr::purl(
+					input = file,
+					output = file.path(tmpdir, sub("\\.(rmd|rmarkdown)$", ".R", basename(file), ignore.case = TRUE)),
+					quiet = TRUE
+			)
+		}
+		stopifnot(
+				"'file' not found, make sure that 'file' is the path to an existing R-script." =
+						file.exists(file),
+				"'file' format not recognized, make sure that 'file' is an existing R-script." =
+						grepl("\\.r$", file, ignore.case = TRUE)
+		)
+		expr <- parse(file = file, keep.source = TRUE)
+	} else if(!missing(text) && !is.null(text)) {
+		expr <- parse(text = text, keep.source = TRUE)
+	} else if(!missing(dir) && dir.exists(dir)) {
+		files <- list.files(dir, pattern = "\\.[rR]$", recursive = TRUE, full.names = TRUE)
+		if(!length(files)) {
+			stop(sprintf("no R-scripts present in directory %s", dir))
+		}
+		expr <- lapply(files, parse, keep.source = TRUE)
+	} else {
+		stop("One of 'file', 'text' or 'dir' must be provided")
+	}
 
-  ## collect imports
-  loaded_pkgs <- unique(get(".__pkgs__", envir = check$imports, inherits = FALSE))
-  loaded_pkgs <- loaded_pkgs %||% character(0)
-  rm(list = ".__pkgs__", envir = check$imports, inherits = FALSE)
-  missing_pkgs <- loaded_pkgs[!.find_pkgs(loaded_pkgs)]
-  pkgs <- setdiff(loaded_pkgs, missing_pkgs)
-  if(length(pkgs)) {
-    pkgfuns <-  lapply(pkgs, function(p) {
-      ns <- try(getNamespace(p), silent = TRUE)
-      if(!inherits(ns, "try-error")) {
-        exports <- names(.getNamespaceInfo(ns, "exports"))
-        lazydata <- names(.getNamespaceInfo(ns, "lazydata"))
-        nms <- c(exports, lazydata)
-        vars <- replicate(length(nms), p, simplify = FALSE)
-        names(vars) <- nms
-        return(vars)
-      } else {
-        return(NULL)
-      }
-    })
-    nsenv <- list2env(unlist(pkgfuns, recursive = FALSE), hash = TRUE, parent = emptyenv())
-  } else {
-    nsenv <- new.env(hash = TRUE, parent = emptyenv())
-  }
-  funs <- objects(check$imports, all.names = TRUE, sorted = FALSE)
-  if(length(funs)) {
-    fun_pkgs <- unique(unlist(mget(funs, envir = check$imports), recursive = FALSE))
-    missing_fun_pkgs <- fun_pkgs[!.find_pkgs(fun_pkgs)]
-    missing_pkgs <- union(missing_pkgs, missing_fun_pkgs)
-  }
+	## check R source code
+	check <- .check_internal(
+			expr = expr,
+			is_pkg = FALSE,
+			include_compiled = include_compiled,
+			skip_globals = skip_globals
+	)
 
-  ## move imported globals to imports
-  globs <- objects(check$globals, all.names = TRUE, sorted = FALSE)
-  srcrefg <- check$srcrefg
-  srcrefi <- check$srcrefi
-  if(length(globs)) {
-    imports <- mget(globs, envir = nsenv, ifnotfound = NA_character_)
-    isimport <- vapply(imports, Negate(is.na), logical(1))
-    if(any(isimport)) {
-      for(nm in names(imports)[isimport]) {
-        assign(nm, unique(c(check$imports[[nm]], imports[[nm]])), envir = check$imports)
-        srcrefi[[nm]] <- srcrefg[[nm]]
-        srcrefg[[nm]] <- NULL
-      }
-      rm(list = names(imports)[isimport], envir = check$globals, inherits = FALSE)
-    }
-  }
+	## collect imports
+	loaded_pkgs <- unique(get(".__pkgs__", envir = check$imports, inherits = FALSE))
+	loaded_pkgs <- loaded_pkgs %||% character(0)
+	rm(list = ".__pkgs__", envir = check$imports, inherits = FALSE)
+	missing_pkgs <- loaded_pkgs[!.find_pkgs(loaded_pkgs)]
+	pkgs <- setdiff(loaded_pkgs, missing_pkgs)
+	if(length(pkgs)) {
+		pkgfuns <-  lapply(pkgs, function(p) {
+					ns <- try(getNamespace(p), silent = TRUE)
+					if(!inherits(ns, "try-error")) {
+						exports <- names(.getNamespaceInfo(ns, "exports"))
+						lazydata <- names(.getNamespaceInfo(ns, "lazydata"))
+						nms <- c(exports, lazydata)
+						vars <- replicate(length(nms), p, simplify = FALSE)
+						names(vars) <- nms
+						return(vars)
+					} else {
+						return(NULL)
+					}
+				})
+		nsenv <- list2env(unlist(pkgfuns, recursive = FALSE), hash = TRUE, parent = emptyenv())
+	} else {
+		nsenv <- new.env(hash = TRUE, parent = emptyenv())
+	}
+	funs <- objects(check$imports, all.names = TRUE, sorted = FALSE)
+	if(length(funs)) {
+		fun_pkgs <- unique(unlist(mget(funs, envir = check$imports), recursive = FALSE))
+		missing_fun_pkgs <- fun_pkgs[!.find_pkgs(fun_pkgs)]
+		missing_pkgs <- union(missing_pkgs, missing_fun_pkgs)
+	}
 
-  return(
-    structure(
-      list(
-        globals = structure(
-          list(
-            env = check$globals,
-            srcref = srcrefg
-          ), class = "checkglobalsg"
-        ),
-        imports = structure(
-          list(
-            env = check$imports,
-            srcref = srcrefi
-          ), class = "checkglobalsi"
-        ),
-        missing_pkgs = missing_pkgs,
-        loaded_pkgs = loaded_pkgs
-      ), class = "checkglobals"
-    )
-  )
+	## move imported globals to imports
+	globs <- objects(check$globals, all.names = TRUE, sorted = FALSE)
+	srcrefg <- check$srcrefg
+	srcrefi <- check$srcrefi
+	if(length(globs)) {
+		imports <- mget(globs, envir = nsenv, ifnotfound = NA_character_)
+		isimport <- vapply(imports, Negate(is.na), logical(1))
+		if(any(isimport)) {
+			for(nm in names(imports)[isimport]) {
+				assign(nm, unique(c(check$imports[[nm]], imports[[nm]])), envir = check$imports)
+				srcrefi[[nm]] <- srcrefg[[nm]]
+				srcrefg[[nm]] <- NULL
+			}
+			rm(list = names(imports)[isimport], envir = check$globals, inherits = FALSE)
+		}
+	}
+
+	return(
+			structure(
+					list(
+							globals = structure(
+									list(
+											env = check$globals,
+											srcref = srcrefg
+									), class = "checkglobalsg"
+							),
+							imports = structure(
+									list(
+											env = check$imports,
+											srcref = srcrefi
+									), class = "checkglobalsi"
+							),
+							missing_pkgs = missing_pkgs,
+							loaded_pkgs = loaded_pkgs
+					),
+					call = mc,
+					class = "checkglobals"
+			)
+	)
 
 }

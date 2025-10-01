@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "checkglobals",
+          "informationUri": "https://cran.r-project.org/package=checkglobals",
+          "version": "0.1.4",
+          "rules": [
+            {
+              "id": "CG01",
+              "name": "UnrecognizedGlobal",
+              "shortDescription": {
+                "text": "Unrecognized global function or variable"
+              },
+              "fullDescription": {
+                "text": "The function or variable is not recognized as an import and no local definition is found."
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "properties": {
+                "tags": ["maintainability", "portability"],
+                "precision": "low",
+                "problem": {
+                  "severity": "recommendation"
+                }
+              }
+            },
+            {
+              "id": "CG02",
+              "name": "MissingPackage",
+              "shortDescription": {
+                "text": "Package required but not installed"
+              },
+              "fullDescription": {
+                "text": "Function or variable imports are detected from a package that is not installed in the current environment."
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "properties": {
+                "tags": ["maintainability", "portability"],
+                "precision": "high",
+                "problem": {
+                  "severity": "recommendation"
+                }
+              }
+            },
+            {
+              "id": "CG03",
+              "name": "PackageNotUsed",
+              "shortDescription": {
+                "text": "Package dependency is not used"
+              },
+              "fullDescription": {
+                "text": "No function or variable imports are detected from an external package that is loaded or imported."
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "properties": {
+                "tags": ["maintainability", "portability"],
+                "precision": "low",
+                "problem": {
+                  "severity": "recommendation"
+                }
+              }
+            },
+			      {
+              "id": "CG04",
+              "name": "DetectedImports",
+              "shortDescription": {
+                "text": "Detected imports by package"
+              },
+              "fullDescription": {
+                "text": "Lists detected function and variable imports by package name for informational purposes." 
+              },
+              "defaultConfiguration": {
+                "level": "none"
+              },
+              "properties": {
+                "tags": ["maintainability", "portability"],
+                "precision": "low"
+              }
+            }
+          ]
+        }
+      },
+      "results": []
+    }
+  ]
+}

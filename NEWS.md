@@ -1,3 +1,8 @@
+# checkglobals 0.1.4
+
+* Convert `checkglobals` object to sarif json
+* Added sarif-upload example gh-workflow
+
 # checkglobals 0.1.3
 
 * Added support for .onAttach, .onLoad and on.exit

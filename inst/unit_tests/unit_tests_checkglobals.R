@@ -112,6 +112,7 @@ if(isTRUE(dir.create(pkgdir)) && isTRUE(file.copy(dirname(rdir), pkgdir, recursi
 }
 
 ## check methods
+tmpjson <- tempfile(fileext = ".json", tmpdir = tmpdir)
 check8.1 <- as_vector(check5.1, pattern = "g")
 check8.2 <- as_vector(check5.1$globals)
 check8.3 <- as_vector(check5.1$imports, sorted = FALSE)  ## sorting depends on locale
@@ -123,6 +124,10 @@ check8.8 <- as.character(check5.1$globals)
 check8.9 <- as.character(check5.1$imports, sorted = FALSE)
 check8.10 <- as.data.frame(check5.1$imports, sorted = FALSE)
 check8.11 <- as.data.frame(check5.1$imports, pattern = "zzz")
+check8.12 <- as_sarif_json(check5.1, pretty = TRUE)
+check8.13 <- as_sarif_json(check5.1, path = tmpjson, use_cli = FALSE)
+check8.14 <- as_sarif_json(check1)
+check8.15 <- as_sarif_json(check4.1, use_cli = FALSE)
 
 dotest("8.1", check8.1, list(global = "g", import = c("aggregate", "getMethod", "globalVariables"), package = c("methods", "stats", "utils")))
 dotest("8.2", check8.2, list(global = c("%>%", "fAttach2", "fLoad2", "g")))
@@ -157,6 +162,14 @@ dotest("8.8", unname(check8.8), check8.2[["global"]])
 dotest("8.9", unname(check8.9), check8.3[["import"]])
 dotest("8.10", check8.10, check8.5)
 dotest("8.11", check8.11, structure(list(name = character(0), package = character(0), type = character(0)), class = "data.frame", row.names = integer(0)))
+dotest("8.12", inherits(check8.12, "json"), TRUE)
+dotest("8.13", grepl('\\"R/functions1\\.R\\"', check8.12), TRUE)
+dotest("8.14", length(gregexpr("DESCRIPTION", check8.12)[[1]]) >= 5L, TRUE)
+dotest("8.15", file.info(check8.13)$size > 0, TRUE)
+dotest("8.16", inherits(check8.14, "json"), TRUE)
+dotest("8.17", length(gregexpr('\\"functions1\\.R\\"', check8.14)[[1]]) >= 26L, TRUE)
+dotest("8.18", inherits(check8.15, "json"), TRUE)
+dotest("8.19", length(gregexpr('\\"functions1\\.R\\"', check8.15)[[1]]) >= 26L, TRUE)
 
 ## errors
 tools::assertError(check_source())

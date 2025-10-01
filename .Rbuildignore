@@ -16,3 +16,4 @@
 ^pkgdown$
 ^Makefile$
 ^docker$
+^Dockerfile$
